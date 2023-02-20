@@ -7,7 +7,12 @@ const config = {
 		extend: {}
 	},
 
-	plugins: [daisyui]
+	plugins: [require('@tailwindcss/typography'), daisyui],
+
+	daisyui: {
+		themes: ['corporate', 'business'],
+		darkTheme: 'business'
+	}
 };
 
 module.exports = config;
