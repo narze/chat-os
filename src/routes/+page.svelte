@@ -2,6 +2,7 @@
 	interface Message {
 		self?: boolean;
 		msg: string;
+		type?: string;
 	}
 
 	let messageInput: string = '';
@@ -9,17 +10,41 @@
 	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?` }];
 
 	$: if (messages[messages.length - 1].self) {
-		const lastMsg = messages[messages.length - 1];
+		const lastMsg = messages[messages.length - 1].msg;
+		if (lastMsg.match(/^commands$/i)) {
+			botMessage(`Here are the commands I can do: ping, commands, qr, about, clear`);
+		} else if (lastMsg.match(/^qr/i)) {
+			// If having text after space
+			const matches = lastMsg.match(/^qr(\s+)(.*)$/i);
+			if (matches && matches[2]) {
+				const qrText = matches[2];
 
-		if (lastMsg.msg.match(/ping/i)) {
+				// TODO: Generate base64 QR code
+				botMessage(
+					`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrText}`,
+					'image'
+				);
+			} else {
+				botMessage(`Please enter text after "qr" to generate a QR code!`);
+			}
+		} else if (lastMsg == 'about') {
+			botMessage('This is a demo of the ChatOS project. Check out the source code on GitHub!');
+			botMessage('https://github.com/narze/chat-os', 'link');
+		} else if (lastMsg == 'clear') {
+			messages = [];
+			botMessage('(messages cleared)');
+		} else if (lastMsg == 'hi') {
+			botMessage('Hello!');
+		} else if (lastMsg.match(/^ping$/i)) {
 			botMessage('pong!');
 		} else {
-			botMessage(`Sorry I don't understand.`);
+			botMessage(`Sorry I don't understand... (Type "commands" to see what I can do)`);
 		}
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
+			e.preventDefault();
 			sendMessage();
 		}
 	}
@@ -40,13 +65,14 @@
 		messageInput = '';
 	}
 
-	function botMessage(msg: string) {
+	function botMessage(msg: string, type: string = 'text') {
 		setTimeout(() => {
 			messages = [
 				...messages,
 				{
 					self: false,
-					msg
+					msg,
+					type
 				}
 			];
 		}, 100);
@@ -55,13 +81,18 @@
 
 <main class="prose lg:prose-lg max-w-full h-screen overflow-hidden">
 	<div class="container mx-auto flex flex-col h-full">
-		<div
-			id="chat-box"
-			class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto"
-		>
+		<div class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto">
 			{#each messages as message}
 				<div class:chat-end={message.self} class:chat-start={!message.self} class="chat">
-					<div class="chat-bubble chat-bubble-primary">{message.msg}</div>
+					<div class="chat-bubble chat-bubble-primary">
+						{#if message.type == 'image'}
+							<img src={message.msg} alt={'QR Code'} />
+						{:else if message.type == 'link'}
+							<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a>
+						{:else}
+							{message.msg}
+						{/if}
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -103,15 +134,4 @@
 </main>
 
 <style>
-	/* Style for the chat box */
-	#chat-box {
-		overflow-y: auto;
-	}
-
-	/* Style for the input box */
-	#input-box {
-		margin-top: 10px;
-		bottom: 0;
-		position: fixed;
-	}
 </style>
