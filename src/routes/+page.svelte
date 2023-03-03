@@ -84,7 +84,7 @@
 		<div class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto">
 			{#each messages as message}
 				<div class:chat-end={message.self} class:chat-start={!message.self} class="chat">
-					<div class="chat-bubble chat-bubble-primary">
+					<div class="chat-bubble chat-bubble-primary" role="log">
 						{#if message.type == 'image'}
 							<img src={message.msg} alt={'QR Code'} />
 						{:else if message.type == 'link'}
