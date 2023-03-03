@@ -83,7 +83,13 @@
 	<div class="container mx-auto flex flex-col h-full">
 		<div class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto">
 			{#each messages as message}
-				<div class:chat-end={message.self} class:chat-start={!message.self} class="chat">
+				<div
+					class="chat"
+					class:chat-start={!message.self}
+					class:chat-end={message.self}
+					class:chat-bot={!message.self}
+					class:chat-self={message.self}
+				>
 					<div class="chat-bubble chat-bubble-primary" role="log">
 						{#if message.type == 'image'}
 							<img src={message.msg} alt={'QR Code'} />
