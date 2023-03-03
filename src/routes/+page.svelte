@@ -105,7 +105,7 @@
 				on:keydown={handleKeydown}
 				tabindex="0"
 				rows="1"
-				class="m-0 w-full resize-none border-0 bg-transparent p-0 pl-2 pr-7 dark:bg-transparent md:pl-0"
+				class="m-0 w-full resize-none border-0 bg-transparent p-0 pl-2 pr-7 dark:bg-transparent md:pl-0 focus:outline-none"
 				style="max-height: 200px; overflow-y: hidden;"
 				placeholder="Type your message..."
 			/>
