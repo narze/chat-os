@@ -24,8 +24,12 @@ export default class ChatOSPage {
 		await this.page.waitForSelector('.chat:last-child:not(.chat-self)');
 	}
 
-	async expectLastMessage(message: string) {
+	async expectLastMessage(message: string | RegExp) {
 		const logs = await this.getChatLogs();
-		await expect(logs[logs.length - 1]).toContain(message);
+		if (typeof message === 'string') {
+			await expect(logs[logs.length - 1]).toContain(message);
+		} else {
+			await expect(logs[logs.length - 1]).toMatch(message);
+		}
 	}
 }
