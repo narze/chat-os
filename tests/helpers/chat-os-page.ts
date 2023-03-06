@@ -33,6 +33,10 @@ export default class ChatOSPage {
 		}
 	}
 
+	async expectGreeting() {
+		await this.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	}
+
 	async expectLastImage(src: string | RegExp, alt: string) {
 		const logsElements = await this.page.getByRole('log').all();
 

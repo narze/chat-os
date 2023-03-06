@@ -5,14 +5,14 @@ test('ChatOS Greeting', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 });
 
 test('hi', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('hi');
 	await chatOS.expectLastMessage(`hi`);
@@ -25,7 +25,7 @@ test('ping', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('ping');
 
@@ -37,7 +37,7 @@ test('slow ping', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('slowping');
 
@@ -49,7 +49,7 @@ test('unknown command', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('bruh');
 	await chatOS.expectLastMessage(`bruh`);
@@ -62,7 +62,7 @@ test('commands', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('commands');
 	await chatOS.expectLastMessage(`commands`);
@@ -75,7 +75,7 @@ test('clear', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('clear');
 
@@ -88,7 +88,7 @@ test('about', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('about');
 
@@ -100,7 +100,7 @@ test('qr', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('qr');
 	await chatOS.waitForResponse();
@@ -115,7 +115,7 @@ test('pp', async ({ page }) => {
 	const chatOS = new ChatOSPage(page);
 	await chatOS.goto();
 
-	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+	await chatOS.expectGreeting();
 
 	await chatOS.input('pp');
 	await chatOS.waitForResponse();
