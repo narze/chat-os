@@ -72,7 +72,7 @@
 	}
 </script>
 
-<main class="prose lg:prose-lg max-w-full h-screen overflow-hidden">
+<main class="prose lg:prose-lg max-w-full h-[100svh] overflow-hidden">
 	<div class="container mx-auto flex flex-col h-full">
 		<div class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto">
 			{#each messages as message}
