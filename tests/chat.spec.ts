@@ -86,10 +86,29 @@ test('clear', async ({ page }) => {
 	await expect(await chatOS.getChatLogs()).toHaveLength(1);
 });
 
-test.skip('about', async ({ page }) => {
-	// TODO
+test('about', async ({ page }) => {
+	const chatOS = new ChatOSPage(page);
+	await chatOS.goto();
+
+	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+
+	await chatOS.input('about');
+
+	await chatOS.waitForResponse();
+	await chatOS.expectLastMessage('https://github.com/narze/chat-os');
 });
 
-test.skip('qr', async ({ page }) => {
-	// TODO
+test('qr', async ({ page }) => {
+	const chatOS = new ChatOSPage(page);
+	await chatOS.goto();
+
+	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+
+	await chatOS.input('qr');
+	await chatOS.waitForResponse();
+	await chatOS.expectLastMessage('qr [message]');
+
+	await chatOS.input('qr https://narze.live');
+	await chatOS.waitForResponse();
+	await chatOS.expectLastImage(/^data:image\/png;base64.+/, 'https://narze.live');
 });

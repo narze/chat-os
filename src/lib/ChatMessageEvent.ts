@@ -5,7 +5,7 @@ export default class ChatMessageEvent extends Event {
 		eventName: string,
 		eventData: {
 			message: string;
-			botMessageCallback: (message: string, type?: string) => void;
+			botMessageCallback: (message: string, type?: string, options?: Record<string, any>) => void;
 			botCommandCallback: (command: string) => void;
 		}
 	) {

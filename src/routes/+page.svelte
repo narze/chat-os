@@ -4,6 +4,8 @@
 	import ping from '../lib/commands/ping';
 	import slowping from '../lib/commands/slowping';
 	import others from '../lib/commands/others';
+	import about from '../lib/commands/about';
+	import qr from '../lib/commands/qr';
 	import unknownCommand from '../lib/commands/unknown';
 
 	// TODO: Load & unload commands
@@ -11,9 +13,12 @@
 	ping();
 	slowping();
 	others();
+	qr();
+	about();
 	unknownCommand(); // Make this the last one
 
 	interface Message {
+		alt?: string;
 		self?: boolean;
 		msg: string;
 		type?: string;
@@ -52,14 +57,15 @@
 		messageInput = '';
 	}
 
-	function onBotReply(msg: string, type: string = 'text') {
+	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
 		setTimeout(() => {
 			messages = [
 				...messages,
 				{
 					self: false,
 					msg,
-					type
+					type,
+					...options
 				}
 			];
 		}, 100);
@@ -85,7 +91,7 @@
 				>
 					<div class="chat-bubble chat-bubble-primary" role="log">
 						{#if message.type == 'image'}
-							<img src={message.msg} alt={'QR Code'} />
+							<img src={message.msg} alt={message.alt} />
 						{:else if message.type == 'link'}
 							<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a>
 						{:else}

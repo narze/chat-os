@@ -32,4 +32,13 @@ export default class ChatOSPage {
 			await expect(logs[logs.length - 1]).toMatch(message);
 		}
 	}
+
+	async expectLastImage(src: string | RegExp, alt: string) {
+		const logsElements = await this.page.getByRole('log').all();
+
+		const lastLogEl = logsElements[logsElements.length - 1];
+
+		await expect(lastLogEl.locator('img')).toHaveAttribute('src', src);
+		await expect(lastLogEl.locator('img')).toHaveAttribute('alt', alt);
+	}
 }
