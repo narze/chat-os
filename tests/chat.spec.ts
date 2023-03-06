@@ -73,11 +73,20 @@ test('commands', async ({ page }) => {
 	);
 });
 
-test.skip('about', async ({ page }) => {
-	// TODO
+test('clear', async ({ page }) => {
+	const chatOS = new ChatOSPage(page);
+	await chatOS.goto();
+
+	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+
+	await chatOS.input('clear');
+
+	await chatOS.waitForResponse();
+	await chatOS.expectLastMessage('(messages cleared)');
+	await expect(await chatOS.getChatLogs()).toHaveLength(1);
 });
 
-test.skip('clear', async ({ page }) => {
+test.skip('about', async ({ page }) => {
 	// TODO
 });
 
