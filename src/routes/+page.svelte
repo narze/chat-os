@@ -1,5 +1,17 @@
 <script lang="ts">
-	import { handleMessage } from '../lib/message-handler';
+	import { handleMessage } from '../lib/commands';
+	import hi from '../lib/commands/hi';
+	import ping from '../lib/commands/ping';
+	import slowping from '../lib/commands/slowping';
+	import others from '../lib/commands/others';
+	import unknownCommand from '../lib/commands/unknown';
+
+	// TODO: Load & unload commands
+	hi();
+	ping();
+	slowping();
+	others();
+	unknownCommand(); // Make this the last one
 
 	interface Message {
 		self?: boolean;
@@ -14,7 +26,7 @@
 	$: if (messages[messages.length - 1].self) {
 		const lastMsg = messages[messages.length - 1].msg;
 
-		handleMessage(lastMsg, botMessage, onBotCommand);
+		handleMessage(lastMsg, onBotReply, onBotCommand);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -40,7 +52,7 @@
 		messageInput = '';
 	}
 
-	function botMessage(msg: string, type: string = 'text') {
+	function onBotReply(msg: string, type: string = 'text') {
 		setTimeout(() => {
 			messages = [
 				...messages,
