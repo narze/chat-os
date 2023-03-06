@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ChatMessageEvent from '../lib/ChatMessageEvent';
+
 	interface Message {
 		self?: boolean;
 		msg: string;
@@ -9,13 +11,54 @@
 
 	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?` }];
 
+	let eventTarget = new EventTarget();
+
+	eventTarget.addEventListener('message', hiHandler as EventListener);
+	eventTarget.addEventListener('message', pingHandler as EventListener);
+	eventTarget.addEventListener('message', slowPingHandler as EventListener);
+	eventTarget.addEventListener('message', otherCommandsHandler as EventListener);
+	eventTarget.addEventListener('message', unknownCommandHandler as EventListener);
+
 	$: if (messages[messages.length - 1].self) {
 		const lastMsg = messages[messages.length - 1].msg;
-		if (lastMsg.match(/^commands$/i)) {
+
+		eventTarget.dispatchEvent(new ChatMessageEvent('message', { message: lastMsg }));
+	}
+
+	function hiHandler(e: ChatMessageEvent) {
+		if (e.data.message == 'hi') {
+			botMessage('Hello!');
+			e.stopImmediatePropagation();
+		}
+	}
+
+	function pingHandler(e: ChatMessageEvent) {
+		if (e.data.message.match(/^ping$/i)) {
+			botMessage('pong!');
+			e.stopImmediatePropagation();
+		}
+	}
+
+	function slowPingHandler(e: ChatMessageEvent) {
+		if (e.data.message.match(/^slowping$/i)) {
+			e.stopImmediatePropagation();
+
+			setTimeout(() => {
+				botMessage('.......(a very late) pong!');
+			}, 3000);
+		}
+	}
+
+	function otherCommandsHandler(e: ChatMessageEvent) {
+		const message = e.data.message;
+		if (message.match(/^commands$/i)) {
 			botMessage(`Here are the commands I can do: ping, commands, qr, about, clear`);
-		} else if (lastMsg.match(/^qr/i)) {
+			e.stopImmediatePropagation();
+		}
+
+		if (message.match(/^qr/i)) {
 			// If having text after space
-			const matches = lastMsg.match(/^qr(\s+)(.*)$/i);
+			const matches = message.match(/^qr(\s+)(.*)$/i);
 			if (matches && matches[2]) {
 				const qrText = matches[2];
 
@@ -27,19 +70,25 @@
 			} else {
 				botMessage(`Please enter text after "qr" to generate a QR code!`);
 			}
-		} else if (lastMsg == 'about') {
+			e.stopImmediatePropagation();
+		}
+
+		if (message == 'about') {
 			botMessage('This is a demo of the ChatOS project. Check out the source code on GitHub!');
 			botMessage('https://github.com/narze/chat-os', 'link');
-		} else if (lastMsg == 'clear') {
+			e.stopImmediatePropagation();
+		}
+
+		if (message == 'clear') {
 			messages = [];
 			botMessage('(messages cleared)');
-		} else if (lastMsg == 'hi') {
-			botMessage('Hello!');
-		} else if (lastMsg.match(/^ping$/i)) {
-			botMessage('pong!');
-		} else {
-			botMessage(`Sorry I don't understand... (Type "commands" to see what I can do)`);
+			e.stopImmediatePropagation();
 		}
+	}
+
+	function unknownCommandHandler(e: ChatMessageEvent) {
+		botMessage(`Sorry I don't understand... (Type "commands" to see what I can do)`);
+		e.stopImmediatePropagation();
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
