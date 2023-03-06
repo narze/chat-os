@@ -8,7 +8,9 @@ export default function () {
 function otherCommandsHandler(e: ChatMessageEvent) {
 	const message = e.data.message;
 	if (message.match(/^commands$/i)) {
-		e.data.botMessageCallback(`Here are the commands I can do: ping, commands, qr, about, clear`);
+		e.data.botMessageCallback(
+			`Here are the commands I can do: ping, commands, qr, pp, about, clear`
+		);
 		e.stopImmediatePropagation();
 	}
 

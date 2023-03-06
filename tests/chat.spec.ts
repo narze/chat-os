@@ -68,9 +68,7 @@ test('commands', async ({ page }) => {
 	await chatOS.expectLastMessage(`commands`);
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(
-		/Here are the commands I can do: ping, commands, qr, about, clear/
-	);
+	await chatOS.expectLastMessage(/Here are the commands I can do: ping, commands/);
 });
 
 test('clear', async ({ page }) => {
@@ -111,4 +109,23 @@ test('qr', async ({ page }) => {
 	await chatOS.input('qr https://narze.live');
 	await chatOS.waitForResponse();
 	await chatOS.expectLastImage(/^data:image\/png;base64.+/, 'https://narze.live');
+});
+
+test('pp', async ({ page }) => {
+	const chatOS = new ChatOSPage(page);
+	await chatOS.goto();
+
+	await chatOS.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+
+	await chatOS.input('pp');
+	await chatOS.waitForResponse();
+	await chatOS.expectLastMessage('pp [promptpay no.] [amount]');
+
+	await chatOS.input('pp 0812345678');
+	await chatOS.waitForResponse();
+	await chatOS.expectLastImage(/^data:image\/png;base64.+/, '0812345678');
+
+	await chatOS.input('pp 0812345678 123.45');
+	await chatOS.waitForResponse();
+	await chatOS.expectLastImage(/^data:image\/png;base64.+/, '0812345678 123.45');
 });

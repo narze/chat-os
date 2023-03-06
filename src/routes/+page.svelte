@@ -6,6 +6,7 @@
 	import others from '../lib/commands/others';
 	import about from '../lib/commands/about';
 	import qr from '../lib/commands/qr';
+	import pp from '../lib/commands/promptpay-qr';
 	import unknownCommand from '../lib/commands/unknown';
 
 	// TODO: Load & unload commands
@@ -14,6 +15,7 @@
 	slowping();
 	others();
 	qr();
+	pp();
 	about();
 	unknownCommand(); // Make this the last one
 
