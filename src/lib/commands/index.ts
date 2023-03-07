@@ -7,13 +7,18 @@ export interface Command {
 	action: Action;
 }
 
+export type Message = string | MessageObject;
+export interface MessageObject {
+	message: string;
+	type: string;
+	options?: Record<string, any>;
+}
+
 export type Action = ({
 	reply,
 	args
 }: {
-	reply: (
-		message: string | { message: string; type: string; options: Record<string, any> }
-	) => void;
+	reply: (message: Message) => void;
 	args: string[];
 }) => void;
 
@@ -27,9 +32,7 @@ export default function register(command: Command) {
 		if (e.data.message === match || (matches = e.data.message.match(command.match))) {
 			e.stopImmediatePropagation();
 
-			const replyCallback = (
-				message: string | { message: string; type: string; options: Record<string, any> }
-			) => {
+			const replyCallback = (message: Message) => {
 				const { botMessageCallback } = e.data;
 				if (typeof message === 'string') {
 					botMessageCallback(message);
