@@ -26,6 +26,7 @@ export default class ChatOSPage {
 
 	async expectLastMessage(message: string | RegExp) {
 		const logs = await this.getChatLogs();
+
 		if (typeof message === 'string') {
 			await expect(logs[logs.length - 1]).toContain(message);
 		} else {

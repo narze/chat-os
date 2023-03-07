@@ -82,7 +82,11 @@ test('clear', async ({ page }) => {
 	await chatOS.input('clear');
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage('(messages cleared)');
+
+	await expect(async () => {
+		await chatOS.expectLastMessage('(messages cleared)');
+	}).toPass();
+
 	await expect(await chatOS.getChatLogs()).toHaveLength(1);
 });
 

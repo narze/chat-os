@@ -125,7 +125,7 @@
 					class:chat-end={message.self}
 					class:chat-bot={!message.self}
 					class:chat-self={message.self}
-					transition:fly={message.self ? { y: 0, duration: 0 } : { y: 50, duration: 100 }}
+					transition:fly={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 				>
 					<div class="chat-header">
 						{!message.self ? 'ChatOS' : ''}
