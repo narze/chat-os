@@ -115,7 +115,7 @@
 	<div class="container mx-auto flex flex-col h-full">
 		<div
 			bind:this={chatDiv}
-			class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-hidden hover:overflow-y-scroll"
+			class="flex flex-col gap-4 md:gap-6 m-auto mb-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
 			{#each messages as message}
 				<div
