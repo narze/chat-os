@@ -112,6 +112,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>ChatOS</title>
+</svelte:head>
+
 <main class="prose lg:prose-lg max-w-full h-[100svh] overflow-hidden">
 	<div class="container mx-auto flex flex-col h-full">
 		<div
@@ -128,8 +132,8 @@
 					transition:fly={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 				>
 					<div class="chat-header">
-						{!message.self ? 'ChatOS' : ''}
-						<time class="text-xs opacity-50"
+						<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
+						<time class="text-xs text-secondary"
 							>{message.time?.toLocaleString('en-US', {
 								weekday: 'short',
 								hour: 'numeric',
@@ -165,6 +169,7 @@
 			/>
 			<button
 				class="absolute p-1 rounded-md text-gray-500 bottom-1.5 right-1 md:bottom-2.5 md:right-2"
+				aria-label="Send message"
 				on:click={sendMessage}
 			>
 				<svg
