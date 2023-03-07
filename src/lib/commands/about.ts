@@ -5,6 +5,10 @@ const command: Command = {
 	action: ({ reply }) => {
 		reply('This is a demo of the ChatOS project. Check out the source code on GitHub!');
 		reply({ message: 'https://github.com/narze/chat-os', type: 'link' });
+		setTimeout(() => {
+			reply('Project Backlog:');
+			reply({ message: 'https://github.com/users/narze/projects/3', type: 'link' });
+		}, 500);
 	}
 };
 
