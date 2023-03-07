@@ -9,6 +9,7 @@
 	import pp from '../lib/commands/promptpay-qr';
 	import unknownCommand from '../lib/commands/unknown';
 	import { tick } from 'svelte';
+	import { fly } from 'svelte/transition';
 
 	// TODO: Load & unload commands
 	hi();
@@ -49,9 +50,9 @@
 
 	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
 
-	$: if (chatDiv && messages) {
+	$: if (chatDiv && messages.length) {
 		tick().then(() => {
-			if (messages[messages.length - 1].self) {
+			if (messages[messages.length - 1]?.self) {
 				scrollToBottom(chatDiv, 'auto');
 			} else {
 				debouncedScrollToBottom(chatDiv, 'smooth');
@@ -115,15 +116,16 @@
 	<div class="container mx-auto flex flex-col h-full">
 		<div
 			bind:this={chatDiv}
-			class="flex flex-col gap-4 md:gap-6 m-auto mb-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
+			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#each messages as message}
+			{#each messages as message (message.time)}
 				<div
 					class="chat"
 					class:chat-start={!message.self}
 					class:chat-end={message.self}
 					class:chat-bot={!message.self}
 					class:chat-self={message.self}
+					transition:fly={message.self ? { y: 0, duration: 0 } : { y: 50, duration: 100 }}
 				>
 					<div class="chat-header">
 						{!message.self ? 'ChatOS' : ''}
