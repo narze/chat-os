@@ -24,11 +24,12 @@
 		self?: boolean;
 		msg: string;
 		type?: string;
+		time: Date;
 	}
 
 	let messageInput: string = '';
 
-	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?` }];
+	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
 
 	$: if (messages[messages.length - 1].self) {
 		const lastMsg = messages[messages.length - 1].msg;
@@ -52,7 +53,8 @@
 			...messages,
 			{
 				self: true,
-				msg: messageInput
+				msg: messageInput,
+				time: new Date()
 			}
 		];
 
@@ -67,6 +69,7 @@
 					self: false,
 					msg,
 					type,
+					time: new Date(),
 					...options
 				}
 			];
@@ -91,6 +94,17 @@
 					class:chat-bot={!message.self}
 					class:chat-self={message.self}
 				>
+					<div class="chat-header">
+						{!message.self ? 'ChatOS' : ''}
+						<time class="text-xs opacity-50"
+							>{message.time?.toLocaleString('en-US', {
+								weekday: 'short',
+								hour: 'numeric',
+								minute: 'numeric',
+								hour12: true
+							})}</time
+						>
+					</div>
 					<div class="chat-bubble chat-bubble-primary" role="log">
 						{#if message.type == 'image'}
 							<img src={message.msg} alt={message.alt} />

@@ -45,4 +45,14 @@ export default class ChatOSPage {
 		await expect(lastLogEl.locator('img')).toHaveAttribute('src', src);
 		await expect(lastLogEl.locator('img')).toHaveAttribute('alt', alt);
 	}
+
+	async expectTimestamp() {
+		const timestamp = new Date().toLocaleString('en-US', {
+			hour: 'numeric',
+			minute: 'numeric',
+			hour12: true
+		});
+
+		await expect(this.page.getByText(new RegExp(timestamp))).toBeVisible();
+	}
 }

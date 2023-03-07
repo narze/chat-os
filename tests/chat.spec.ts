@@ -6,6 +6,8 @@ test('ChatOS Greeting', async ({ page }) => {
 	await chatOS.goto();
 
 	await chatOS.expectGreeting();
+
+	await chatOS.expectTimestamp();
 });
 
 test('hi', async ({ page }) => {
