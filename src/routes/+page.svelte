@@ -8,6 +8,7 @@
 	import qr from '../lib/commands/qr';
 	import pp from '../lib/commands/promptpay-qr';
 	import unknownCommand from '../lib/commands/unknown';
+	import { tick } from 'svelte';
 
 	// TODO: Load & unload commands
 	hi();
@@ -27,9 +28,36 @@
 		time: Date;
 	}
 
+	let chatDiv: HTMLDivElement;
+
 	let messageInput: string = '';
 
 	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
+
+	const scrollToBottom = async (node: HTMLElement, behavior?: ScrollBehavior) => {
+		node.scroll({ top: node.scrollHeight, behavior });
+	};
+
+	const debounce = (func: Function, delay: number) => {
+		let timer: NodeJS.Timeout;
+
+		return (...args: any[]) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => func(...args), delay);
+		};
+	};
+
+	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
+
+	$: if (chatDiv && messages) {
+		tick().then(() => {
+			if (messages[messages.length - 1].self) {
+				scrollToBottom(chatDiv, 'auto');
+			} else {
+				debouncedScrollToBottom(chatDiv, 'smooth');
+			}
+		});
+	}
 
 	$: if (messages[messages.length - 1].self) {
 		const lastMsg = messages[messages.length - 1].msg;
@@ -85,7 +113,10 @@
 
 <main class="prose lg:prose-lg max-w-full h-[100svh] overflow-hidden">
 	<div class="container mx-auto flex flex-col h-full">
-		<div class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-auto">
+		<div
+			bind:this={chatDiv}
+			class="flex flex-col gap-4 md:gap-6 m-auto p-4 flex-1 w-full overflow-y-hidden hover:overflow-y-scroll"
+		>
 			{#each messages as message}
 				<div
 					class="chat"
