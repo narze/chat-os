@@ -7,9 +7,11 @@
 	import about from '../lib/commands/about';
 	import qr from '../lib/commands/qr';
 	import pp from '../lib/commands/promptpay-qr';
+	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
 	import { tick } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import { db } from '../lib/db';
 
 	// TODO: Load & unload commands
 	hi();
@@ -19,6 +21,7 @@
 	qr();
 	pp();
 	about();
+	chatlog();
 	unknownCommand(); // Make this the last one
 
 	interface Message {
@@ -73,10 +76,16 @@
 		}
 	}
 
-	function sendMessage() {
+	async function sendMessage() {
 		if (!messageInput.length) {
 			return;
 		}
+
+		await db.chatLogs.add({
+			isBot: false,
+			message: messageInput,
+			time: new Date()
+		});
 
 		messages = [
 			...messages,
@@ -148,7 +157,9 @@
 						{:else if message.type == 'link'}
 							<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a>
 						{:else}
-							{message.msg}
+							{#each message.msg.split('\n') as line}
+								<div>{line}</div>
+							{/each}
 						{/if}
 					</div>
 				</div>
