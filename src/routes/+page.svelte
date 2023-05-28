@@ -100,7 +100,13 @@
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
-		setTimeout(() => {
+		setTimeout(async () => {
+			await db.chatLogs.add({
+				isBot: true,
+				message: msg,
+				time: new Date()
+			});
+
 			messages = [
 				...messages,
 				{
