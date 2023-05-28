@@ -1,5 +1,6 @@
 import type ChatMessageEvent from '../ChatMessageEvent';
 import { eventTarget } from '.';
+import { db } from '../db';
 
 export default function () {
 	eventTarget.addEventListener('message', otherCommandsHandler as EventListener);

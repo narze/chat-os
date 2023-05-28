@@ -12,6 +12,7 @@
 	import { tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
+	import { liveQuery, type Observable } from 'dexie';
 
 	// TODO: Load & unload commands
 	hi();
@@ -36,7 +37,30 @@
 
 	let messageInput: string = '';
 
-	let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
+	// let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
+
+	$: messages = liveQuery(async () => {
+		const chatLogs = await db.chatLogs.toArray();
+
+		const messages = chatLogs.map((log) => ({
+			self: !log.isBot,
+			msg: log.message,
+			time: log.time,
+			type: 'text'
+			// TODO
+			// alt?: string;
+		}));
+
+		return messages;
+	}) satisfies Observable<Message[]>;
+
+	$: if ($messages && $messages.length == 0) {
+		db.chatLogs.add({
+			isBot: true,
+			message: `Hello! I'm ChatOS! How can I help?`,
+			time: new Date()
+		});
+	}
 
 	const scrollToBottom = async (node: HTMLElement, behavior?: ScrollBehavior) => {
 		node.scroll({ top: node.scrollHeight, behavior });
@@ -53,9 +77,9 @@
 
 	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
 
-	$: if (chatDiv && messages.length) {
+	$: if (chatDiv && $messages?.length) {
 		tick().then(() => {
-			if (messages[messages.length - 1]?.self) {
+			if ($messages[$messages.length - 1]?.self) {
 				scrollToBottom(chatDiv, 'auto');
 			} else {
 				debouncedScrollToBottom(chatDiv, 'smooth');
@@ -63,8 +87,8 @@
 		});
 	}
 
-	$: if (messages[messages.length - 1].self) {
-		const lastMsg = messages[messages.length - 1].msg;
+	$: if ($messages && $messages[$messages.length - 1]?.self) {
+		const lastMsg = $messages[$messages.length - 1].msg;
 
 		handleMessage(lastMsg, onBotReply, onBotCommand);
 	}
@@ -87,14 +111,14 @@
 			time: new Date()
 		});
 
-		messages = [
-			...messages,
-			{
-				self: true,
-				msg: messageInput,
-				time: new Date()
-			}
-		];
+		// $messages = [
+		// 	...$messages,
+		// 	{
+		// 		self: true,
+		// 		msg: messageInput,
+		// 		time: new Date()
+		// 	}
+		// ];
 
 		messageInput = '';
 	}
@@ -106,23 +130,14 @@
 				message: msg,
 				time: new Date()
 			});
-
-			messages = [
-				...messages,
-				{
-					self: false,
-					msg,
-					type,
-					time: new Date(),
-					...options
-				}
-			];
 		}, 100);
 	}
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
-			messages = [];
+			setTimeout(() => {
+				db.chatLogs.clear();
+			}, 100);
 		}
 	}
 </script>
@@ -137,39 +152,42 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#each messages as message (message.time)}
-				<div
-					class="chat"
-					class:chat-start={!message.self}
-					class:chat-end={message.self}
-					class:chat-bot={!message.self}
-					class:chat-self={message.self}
-					transition:fly={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
-				>
-					<div class="chat-header">
-						<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
-						<time class="text-xs text-secondary"
-							>{message.time?.toLocaleString('en-US', {
-								weekday: 'short',
-								hour: 'numeric',
-								minute: 'numeric',
-								hour12: true
-							})}</time
-						>
+			{#if $messages}
+				{#each $messages as message (message.time)}
+					<div
+						class="chat"
+						class:chat-start={!message.self}
+						class:chat-end={message.self}
+						class:chat-bot={!message.self}
+						class:chat-self={message.self}
+						transition:fly={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
+					>
+						<div class="chat-header">
+							<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
+							<time class="text-xs text-secondary"
+								>{message.time?.toLocaleString('en-US', {
+									weekday: 'short',
+									hour: 'numeric',
+									minute: 'numeric',
+									hour12: true
+								})}</time
+							>
+						</div>
+						<div class="chat-bubble chat-bubble-primary" role="log">
+							{#if message.type == 'image'}
+								<img src={message.msg} alt={message.alt} />
+							{:else if message.type == 'link'}
+								<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a
+								>
+							{:else}
+								{#each message.msg.split('\n') as line}
+									<div>{line}</div>
+								{/each}
+							{/if}
+						</div>
 					</div>
-					<div class="chat-bubble chat-bubble-primary" role="log">
-						{#if message.type == 'image'}
-							<img src={message.msg} alt={message.alt} />
-						{:else if message.type == 'link'}
-							<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a>
-						{:else}
-							{#each message.msg.split('\n') as line}
-								<div>{line}</div>
-							{/each}
-						{/if}
-					</div>
-				</div>
-			{/each}
+				{/each}
+			{/if}
 		</div>
 
 		<div
