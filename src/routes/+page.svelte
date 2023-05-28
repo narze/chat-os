@@ -9,7 +9,7 @@
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
@@ -53,14 +53,16 @@
 		return messages;
 	}) satisfies Observable<Message[]>;
 
-	$: if ($messages && $messages.length == 0) {
-		db.chatLogs.add({
-			isBot: true,
-			message: `Hello! I'm ChatOS! How can I help?`,
-			time: new Date(),
-			type: 'text'
-		});
-	}
+	onMount(async () => {
+		if ((await db.chatLogs.count()) == 0) {
+			db.chatLogs.add({
+				isBot: true,
+				message: `Hello! I'm ChatOS! How can I help?`,
+				time: new Date(),
+				type: 'text'
+			});
+		}
+	});
 
 	const scrollToBottom = async (node: HTMLElement, behavior?: ScrollBehavior) => {
 		node.scroll({ top: node.scrollHeight, behavior });
