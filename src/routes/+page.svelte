@@ -46,9 +46,8 @@
 			self: !log.isBot,
 			msg: log.message,
 			time: log.time,
-			type: 'text'
-			// TODO
-			// alt?: string;
+			type: log.type,
+			alt: log.alt
 		}));
 
 		return messages;
@@ -58,7 +57,8 @@
 		db.chatLogs.add({
 			isBot: true,
 			message: `Hello! I'm ChatOS! How can I help?`,
-			time: new Date()
+			time: new Date(),
+			type: 'text'
 		});
 	}
 
@@ -108,17 +108,9 @@
 		await db.chatLogs.add({
 			isBot: false,
 			message: messageInput,
-			time: new Date()
+			time: new Date(),
+			type: 'text'
 		});
-
-		// $messages = [
-		// 	...$messages,
-		// 	{
-		// 		self: true,
-		// 		msg: messageInput,
-		// 		time: new Date()
-		// 	}
-		// ];
 
 		messageInput = '';
 	}
@@ -128,7 +120,9 @@
 			await db.chatLogs.add({
 				isBot: true,
 				message: msg,
-				time: new Date()
+				time: new Date(),
+				type: type,
+				...options
 			});
 		}, 100);
 	}
