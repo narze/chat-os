@@ -136,9 +136,11 @@
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
-			setTimeout(() => {
-				db.chatLogs.clear();
-			}, 100);
+			db.on('ready', () => {
+				setTimeout(async () => {
+					await db.chatLogs.clear();
+				}, 10);
+			});
 		}
 	}
 </script>
