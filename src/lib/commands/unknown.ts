@@ -1,4 +1,4 @@
-import register, { type Command } from '.';
+import register, { deregister, type Command } from '.';
 
 const command: Command = {
 	match: /.?/i,
@@ -9,4 +9,5 @@ const command: Command = {
 
 export default function () {
 	register(command);
+	return () => deregister(command);
 }

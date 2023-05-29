@@ -50,6 +50,10 @@ export default function register(command: Command) {
 	eventTarget.addEventListener('message', handlers[command.match.toString()] as EventListener);
 }
 
+export function deregister(command: Command) {
+	eventTarget.removeEventListener('message', handlers[command.match.toString()] as EventListener);
+}
+
 export function handleMessage(
 	message: string,
 	botMessageCallback: (botMsg: string, type?: string, options?: Record<string, any>) => void,

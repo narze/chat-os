@@ -20,6 +20,9 @@ export default class ChatOSPage {
 	}
 
 	async getChatLogs() {
+		// Wait for a little bit to fix flaky tests
+		await this.page.waitForTimeout(100);
+
 		return await this.page.getByRole('log').allInnerTexts();
 	}
 

@@ -9,21 +9,23 @@
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
 
 	// TODO: Load & unload commands
-	hi();
-	ping();
-	slowping();
-	others();
-	qr();
-	pp();
-	about();
-	chatlog();
-	unknownCommand(); // Make this the last one
+	const commands = [
+		hi(),
+		ping(),
+		slowping(),
+		others(),
+		qr(),
+		pp(),
+		about(),
+		chatlog(),
+		unknownCommand() // Make this the last one
+	];
 
 	interface Message {
 		alt?: string;
@@ -37,8 +39,6 @@
 
 	let messageInput: string = '';
 	let dbReady = false;
-
-	// let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
 
 	$: messages = liveQuery(async () => {
 		const chatLogs = await db.chatLogs.toArray();
@@ -67,6 +67,10 @@
 				type: 'text'
 			});
 		}
+	});
+
+	onDestroy(() => {
+		commands.forEach((deregister) => deregister());
 	});
 
 	const scrollToBottom = async (node: HTMLElement, behavior?: ScrollBehavior) => {

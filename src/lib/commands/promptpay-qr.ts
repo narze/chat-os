@@ -1,4 +1,4 @@
-import register, { type Command } from '.';
+import register, { deregister, type Command } from '.';
 import QRCode from 'qrcode';
 import ppqr from 'promptpay-qr';
 
@@ -29,4 +29,5 @@ const command: Command = {
 
 export default function () {
 	register(command);
+	return () => deregister(command);
 }

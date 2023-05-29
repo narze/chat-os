@@ -1,4 +1,4 @@
-import register, { type Command } from '.';
+import register, { deregister, type Command } from '.';
 import { db } from '../db';
 
 const command: Command = {
@@ -23,4 +23,6 @@ const command: Command = {
 
 export default function () {
 	register(command);
+
+	return () => deregister(command);
 }
