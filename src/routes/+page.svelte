@@ -36,6 +36,7 @@
 	let chatDiv: HTMLDivElement;
 
 	let messageInput: string = '';
+	let dbReady = false;
 
 	// let messages: Message[] = [{ msg: `Hello! I'm ChatOS! How can I help?`, time: new Date() }];
 
@@ -54,6 +55,10 @@
 	}) satisfies Observable<Message[]>;
 
 	onMount(async () => {
+		db.on('ready', () => {
+			dbReady = true;
+		});
+
 		if ((await db.chatLogs.count()) == 0) {
 			db.chatLogs.add({
 				isBot: true,
@@ -142,7 +147,9 @@
 	<title>ChatOS</title>
 </svelte:head>
 
-<main class="prose lg:prose-lg max-w-full h-[100svh] overflow-hidden">
+<svelte:body data-testid="db-ready" />
+
+<main class="prose lg:prose-lg max-w-full h-[100svh] overflow-hidden" data-db-ready={dbReady}>
 	<div class="container mx-auto flex flex-col h-full">
 		<div
 			bind:this={chatDiv}

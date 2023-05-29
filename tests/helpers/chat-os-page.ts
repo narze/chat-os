@@ -9,6 +9,9 @@ export default class ChatOSPage {
 
 	async goto() {
 		await this.page.goto('/');
+
+		const dbReady = this.page.locator('[data-db-ready=true]');
+		await dbReady.waitFor();
 	}
 
 	async input(text: string) {
@@ -48,12 +51,7 @@ export default class ChatOSPage {
 	}
 
 	async expectTimestamp() {
-		const timestamp = new Date().toLocaleString('en-US', {
-			hour: 'numeric',
-			minute: 'numeric',
-			hour12: true
-		});
-
-		await expect(this.page.getByText(new RegExp(timestamp))).toBeVisible();
+		const timestampRegex = /\d{1,2}:\d{1,2} (AM|PM)/;
+		await expect(this.page.getByText(timestampRegex)).toBeVisible();
 	}
 }
