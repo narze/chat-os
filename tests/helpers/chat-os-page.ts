@@ -20,9 +20,6 @@ export default class ChatOSPage {
 	}
 
 	async getChatLogs() {
-		// Wait for a little bit to fix flaky tests
-		await this.page.waitForTimeout(100);
-
 		return await this.page.getByRole('log').allInnerTexts();
 	}
 
@@ -31,13 +28,15 @@ export default class ChatOSPage {
 	}
 
 	async expectLastMessage(message: string | RegExp) {
-		const logs = await this.getChatLogs();
+		await expect(async () => {
+			const logs = await this.getChatLogs();
 
-		if (typeof message === 'string') {
-			await expect(logs[logs.length - 1]).toContain(message);
-		} else {
-			await expect(logs[logs.length - 1]).toMatch(message);
-		}
+			if (typeof message === 'string') {
+				await expect(logs[logs.length - 1]).toContain(message);
+			} else {
+				await expect(logs[logs.length - 1]).toMatch(message);
+			}
+		}).toPass();
 	}
 
 	async expectGreeting() {
@@ -45,12 +44,14 @@ export default class ChatOSPage {
 	}
 
 	async expectLastImage(src: string | RegExp, alt: string) {
-		const logsElements = await this.page.getByRole('log').all();
+		await expect(async () => {
+			const logsElements = await this.page.getByRole('log').all();
 
-		const lastLogEl = logsElements[logsElements.length - 1];
+			const lastLogEl = logsElements[logsElements.length - 1];
 
-		await expect(lastLogEl.locator('img')).toHaveAttribute('src', src);
-		await expect(lastLogEl.locator('img')).toHaveAttribute('alt', alt);
+			await expect(lastLogEl.locator('img')).toHaveAttribute('src', src);
+			await expect(lastLogEl.locator('img')).toHaveAttribute('alt', alt);
+		}).toPass();
 	}
 
 	async expectTimestamp() {
