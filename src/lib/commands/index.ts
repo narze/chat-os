@@ -41,7 +41,7 @@ export default function register(command: Command) {
 				}
 			};
 
-			const args = !!matches ? matches.slice(1) : [];
+			const args = matches ? matches.slice(1) : [];
 
 			command.action({ reply: replyCallback, args });
 		}

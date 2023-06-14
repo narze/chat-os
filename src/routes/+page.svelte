@@ -9,10 +9,13 @@
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
-	import { onDestroy, onMount, tick } from 'svelte';
+	import { SvelteComponent, SvelteComponentTyped, onDestroy, onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
+	import timer from '../lib/commands/timer';
+	import Timer from '../lib/commands/components/timer.svelte';
+	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
 	// TODO: Load & unload commands
 	const commands = [
@@ -24,8 +27,13 @@
 		pp(),
 		about(),
 		chatlog(),
+		timer(),
 		unknownCommand() // Make this the last one
 	];
+
+	const Components: Record<string, typeof SvelteComponent> = {
+		timer: Timer
+	};
 
 	interface Message {
 		alt?: string;
@@ -189,6 +197,11 @@
 							{:else if message.type == 'link'}
 								<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a
 								>
+							{:else if message.type == 'component'}
+								{#if message.msg in Components}
+									<!-- <Renderer component={Components[message.msg]} props={{}} /> -->
+									<svelte:component this={Components[message.msg]} {...message} />
+								{/if}
 							{:else}
 								{#each message.msg.split('\n') as line}
 									<div>{line}</div>
