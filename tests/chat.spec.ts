@@ -135,3 +135,15 @@ test('pp', async ({ page }) => {
 	await chatOS.waitForResponse();
 	await chatOS.expectLastImageResponse(/^data:image\/png;base64.+/, '0812345678 123.45');
 });
+
+test('largetype', async ({ page }) => {
+	const chatOS = new ChatOSPage(page);
+	await chatOS.goto();
+
+	await chatOS.expectGreeting();
+
+	await chatOS.input('large hello world');
+
+	await chatOS.waitForResponse();
+	await chatOS.expectLastMessage(`hello world`, true);
+});

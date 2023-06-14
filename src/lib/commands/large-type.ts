@@ -1,20 +1,20 @@
 import register, { deregister, type Command } from '.';
-import Timer from './components/timer.svelte';
+
 const command: Command = {
-	match: /^timer(\s+(\d+))/i,
+	match: /^large(type)?(\s+(.+))/i,
 	action: async ({ reply, args }) => {
-		if (!args[1]) {
-			reply('Please enter timer in minutes');
-			reply('timer [minutes]');
+		if (!args[2]) {
+			reply('Please enter message');
+			reply('large [message]');
 			return;
 		}
 
-		const minutes = args[1];
+		const text = args[2];
 
 		reply({
 			type: 'component',
-			message: 'timer',
-			options: { minutes }
+			message: 'largetype',
+			options: { text }
 		});
 	}
 };

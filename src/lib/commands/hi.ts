@@ -1,7 +1,7 @@
 import register, { deregister, type Command } from '.';
 
 const command: Command = {
-	match: 'hi',
+	match: '^hi',
 	action: ({ reply }) => {
 		reply('Hello!');
 	}

@@ -13,8 +13,8 @@
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
-	import timer from '../lib/commands/timer';
-	import Timer from '../lib/commands/components/timer.svelte';
+	import largeType from '../lib/commands/large-type';
+	import LargeType from '../lib/commands/components/LargeType.svelte';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
 	// TODO: Load & unload commands
@@ -27,12 +27,12 @@
 		pp(),
 		about(),
 		chatlog(),
-		timer(),
+		largeType(),
 		unknownCommand() // Make this the last one
 	];
 
 	const Components: Record<string, typeof SvelteComponent> = {
-		timer: Timer
+		largetype: LargeType
 	};
 
 	interface Message {
@@ -56,7 +56,8 @@
 			msg: log.message,
 			time: log.time,
 			type: log.type,
-			alt: log.alt
+			alt: log.alt,
+			meta: log.meta
 		}));
 
 		return messages;
@@ -141,7 +142,8 @@
 				message: msg,
 				time: new Date(),
 				type: type,
-				...options
+				alt: options.alt,
+				meta: options
 			});
 		}, 100);
 	}
@@ -200,7 +202,7 @@
 							{:else if message.type == 'component'}
 								{#if message.msg in Components}
 									<!-- <Renderer component={Components[message.msg]} props={{}} /> -->
-									<svelte:component this={Components[message.msg]} {...message} />
+									<svelte:component this={Components[message.msg]} options={message.meta} />
 								{/if}
 							{:else}
 								{#each message.msg.split('\n') as line}
