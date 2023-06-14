@@ -19,17 +19,25 @@ export default class ChatOSPage {
 		await this.page.keyboard.press('Enter');
 	}
 
-	async getChatLogs() {
+	async getAllChatLogs() {
 		return await this.page.getByRole('log').allInnerTexts();
+	}
+
+	async getSelfChatLogs() {
+		return await this.page.locator('.chat-self').getByRole('log').allInnerTexts();
+	}
+
+	async getBotChatLogs() {
+		return await this.page.locator('.chat-bot').getByRole('log').allInnerTexts();
 	}
 
 	async waitForResponse() {
 		await this.page.waitForSelector('.chat:last-child:not(.chat-self)');
 	}
 
-	async expectLastMessage(message: string | RegExp) {
+	async expectLastMessage(message: string | RegExp, bot: boolean) {
 		await expect(async () => {
-			const logs = await this.getChatLogs();
+			const logs = await (bot ? this.getBotChatLogs() : this.getSelfChatLogs());
 
 			if (typeof message === 'string') {
 				await expect(logs[logs.length - 1]).toContain(message);
@@ -40,12 +48,12 @@ export default class ChatOSPage {
 	}
 
 	async expectGreeting() {
-		await this.expectLastMessage(`Hello! I'm ChatOS! How can I help?`);
+		await this.expectLastMessage(`Hello! I'm ChatOS! How can I help?`, true);
 	}
 
-	async expectLastImage(src: string | RegExp, alt: string) {
+	async expectLastImageResponse(src: string | RegExp, alt: string) {
 		await expect(async () => {
-			const logsElements = await this.page.getByRole('log').all();
+			const logsElements = await this.page.locator('.chat-bot').getByRole('log').all();
 
 			const lastLogEl = logsElements[logsElements.length - 1];
 

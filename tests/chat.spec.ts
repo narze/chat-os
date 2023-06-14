@@ -17,10 +17,10 @@ test('hi', async ({ page }) => {
 	await chatOS.expectGreeting();
 
 	await chatOS.input('hi');
-	await chatOS.expectLastMessage(`hi`);
+	await chatOS.expectLastMessage(`hi`, false);
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(`Hello!`);
+	await chatOS.expectLastMessage(`Hello!`, true);
 });
 
 test('ping', async ({ page }) => {
@@ -32,7 +32,7 @@ test('ping', async ({ page }) => {
 	await chatOS.input('ping');
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(`pong!`);
+	await chatOS.expectLastMessage(`pong!`, true);
 });
 
 test('slow ping', async ({ page }) => {
@@ -44,7 +44,7 @@ test('slow ping', async ({ page }) => {
 	await chatOS.input('slowping');
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(`.......(a very late) pong!`);
+	await chatOS.expectLastMessage(`.......(a very late) pong!`, true);
 });
 
 test('unknown command', async ({ page }) => {
@@ -54,10 +54,10 @@ test('unknown command', async ({ page }) => {
 	await chatOS.expectGreeting();
 
 	await chatOS.input('bruh');
-	await chatOS.expectLastMessage(`bruh`);
+	await chatOS.expectLastMessage(`bruh`, false);
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(/Sorry I don't understand/);
+	await chatOS.expectLastMessage(/Sorry I don't understand/, true);
 });
 
 test('commands', async ({ page }) => {
@@ -67,10 +67,10 @@ test('commands', async ({ page }) => {
 	await chatOS.expectGreeting();
 
 	await chatOS.input('commands');
-	await chatOS.expectLastMessage(`commands`);
+	await chatOS.expectLastMessage(`commands`, false);
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(/Here are the commands I can do: ping, commands/);
+	await chatOS.expectLastMessage(/Here are the commands I can do: ping, commands/, true);
 });
 
 test('clear', async ({ page }) => {
@@ -84,10 +84,10 @@ test('clear', async ({ page }) => {
 	await chatOS.waitForResponse();
 
 	await expect(async () => {
-		await chatOS.expectLastMessage('(messages cleared)');
+		await chatOS.expectLastMessage('(messages cleared)', true);
 	}).toPass();
 
-	await expect(await chatOS.getChatLogs()).toHaveLength(1);
+	await expect(await chatOS.getAllChatLogs()).toHaveLength(1);
 });
 
 test('about', async ({ page }) => {
@@ -99,7 +99,7 @@ test('about', async ({ page }) => {
 	await chatOS.input('about');
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage('https://github.com/narze/chat-os');
+	await chatOS.expectLastMessage('https://github.com/narze/chat-os', true);
 });
 
 test('qr', async ({ page }) => {
@@ -110,11 +110,11 @@ test('qr', async ({ page }) => {
 
 	await chatOS.input('qr');
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage('qr [message]');
+	await chatOS.expectLastMessage('qr [message]', true);
 
 	await chatOS.input('qr https://narze.live');
 	await chatOS.waitForResponse();
-	await chatOS.expectLastImage(/^data:image\/png;base64.+/, 'https://narze.live');
+	await chatOS.expectLastImageResponse(/^data:image\/png;base64.+/, 'https://narze.live');
 });
 
 test('pp', async ({ page }) => {
@@ -125,13 +125,13 @@ test('pp', async ({ page }) => {
 
 	await chatOS.input('pp');
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage('pp [promptpay no.] [amount]');
+	await chatOS.expectLastMessage('pp [promptpay no.] [amount]', true);
 
 	await chatOS.input('pp 0812345678');
 	await chatOS.waitForResponse();
-	await chatOS.expectLastImage(/^data:image\/png;base64.+/, '0812345678');
+	await chatOS.expectLastImageResponse(/^data:image\/png;base64.+/, '0812345678');
 
 	await chatOS.input('pp 0812345678 123.45');
 	await chatOS.waitForResponse();
-	await chatOS.expectLastImage(/^data:image\/png;base64.+/, '0812345678 123.45');
+	await chatOS.expectLastImageResponse(/^data:image\/png;base64.+/, '0812345678 123.45');
 });
