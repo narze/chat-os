@@ -6,6 +6,7 @@
 	const timerSeconds = +options.seconds || 60;
 	const startAt = +options.startAt;
 	const endAt = startAt + timerSeconds * 1000;
+	const name = options.name || undefined;
 
 	let msLeft: number;
 	let frame: number;
@@ -35,7 +36,7 @@
 
 <div class="p-8 flex flex-col gap-2">
 	<div class="font-semibold">
-		[ Timer {format(timerSeconds)} ]
+		[ Timer {format(timerSeconds)}{name ? ` - ${name}` : ''} ]
 	</div>
 	<div class="text-7xl break-all">
 		{format(Math.ceil(msLeft / 1000))}

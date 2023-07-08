@@ -1,7 +1,7 @@
 import register, { deregister, type Command } from '.';
 
 const command: Command = {
-	match: /^timer(\s+((?<minutes>\d+):)?(?<seconds>\d+)?)?/i,
+	match: /^timer(\s+((?<minutes>\d+):)?(?<seconds>\d+)?)?(\s+(?<name>.+))?/i,
 
 	action: async ({ reply, args }) => {
 		if (Array.isArray(args)) return;
@@ -20,7 +20,7 @@ const command: Command = {
 		reply({
 			type: 'component',
 			message: 'timer',
-			options: { seconds, startAt: Date.now() }
+			options: { seconds, startAt: Date.now(), name: args.name }
 		});
 	}
 };
