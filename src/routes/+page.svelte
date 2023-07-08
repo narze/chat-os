@@ -9,7 +9,7 @@
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
-	import { SvelteComponent, SvelteComponentTyped, onDestroy, onMount, tick } from 'svelte';
+	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
@@ -31,7 +31,7 @@
 		unknownCommand() // Make this the last one
 	];
 
-	const Components: Record<string, typeof SvelteComponent> = {
+	const Components: Record<string, typeof SvelteComponent<any>> = {
 		largetype: LargeType
 	};
 
@@ -179,7 +179,7 @@
 						class:chat-end={message.self}
 						class:chat-bot={!message.self}
 						class:chat-self={message.self}
-						transition:fly={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
+						transition:fly|global={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 					>
 						<div class="chat-header">
 							<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
