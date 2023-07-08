@@ -8,6 +8,7 @@
 	import qr from '../lib/commands/qr';
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
+	import timer from '../lib/commands/timer';
 	import unknownCommand from '../lib/commands/unknown';
 	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -28,6 +29,7 @@
 		about(),
 		chatlog(),
 		largeType(),
+		timer(),
 		unknownCommand() // Make this the last one
 	];
 

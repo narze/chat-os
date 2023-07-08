@@ -19,7 +19,7 @@ export type Action = ({
 	args
 }: {
 	reply: (message: Message) => void;
-	args: string[];
+	args: string[] | Record<string, string>;
 }) => void;
 
 const handlers: Record<string, (e: ChatMessageEvent) => void> = {};
@@ -41,7 +41,7 @@ export default function register(command: Command) {
 				}
 			};
 
-			const args = matches ? matches.slice(1) : [];
+			const args = matches ? matches.groups || matches.slice(1) : [];
 
 			command.action({ reply: replyCallback, args });
 		}
