@@ -8,7 +8,6 @@
 	import qr from '../lib/commands/qr';
 	import pp from '../lib/commands/promptpay-qr';
 	import chatlog from '../lib/commands/chatlog';
-	import timer from '../lib/commands/timer';
 	import unknownCommand from '../lib/commands/unknown';
 	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -16,6 +15,8 @@
 	import { liveQuery, type Observable } from 'dexie';
 	import largeType from '../lib/commands/large-type';
 	import LargeType from '../lib/commands/components/LargeType.svelte';
+	import timer from '../lib/commands/timer';
+	import Timer from '../lib/commands/components/Timer.svelte';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
 	// TODO: Load & unload commands
@@ -34,7 +35,8 @@
 	];
 
 	const Components: Record<string, typeof SvelteComponent<any>> = {
-		largetype: LargeType
+		largetype: LargeType,
+		timer: Timer
 	};
 
 	interface Message {

@@ -13,27 +13,19 @@ const command: Command = {
 			return;
 		}
 
-		if (!args.minutes && args.seconds) {
-			reply(`${+args.seconds} seconds`);
-			return;
+		console.log(args);
+
+		if (!args.minutes) {
+			args.minutes = '0';
 		}
 
 		const seconds = +args.minutes * 60 + +args.seconds;
-		reply(`${seconds} seconds`);
 
-		// let alt = args[1];
-
-		// if (args[3]) {
-		// 	alt += ` ${args[3]}`;
-		// }
-
-		// reply({
-		// 	type: 'image',
-		// 	message: await QRCode.toDataURL(ppqr(args[1], { amount: args[3] ? +args[3] : undefined }), {
-		// 		scale: 6
-		// 	}),
-		// 	options: { alt }
-		// });
+		reply({
+			type: 'component',
+			message: 'timer',
+			options: { seconds }
+		});
 	}
 };
 
