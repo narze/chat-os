@@ -1,7 +1,20 @@
+<script context="module" lang="ts">
+	export type TimerWorkerMessageRequest = {
+		endAt: number;
+	};
+
+	export type TimerWorkerMessageResponse = {
+		ended: boolean;
+	};
+
+	export type PostMessage<T extends TimerWorkerMessageRequest | TimerWorkerMessageResponse> = T;
+</script>
+
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import AlertIcon from './AlertIcon.svelte';
 	import AlertDisabledIcon from './AlertDisabledIcon.svelte';
+	import { dev } from '$app/environment';
 
 	export let options: Record<string, string> = {};
 
@@ -14,6 +27,8 @@
 	let msLeft: number;
 	let frame: number;
 	let notificationState: NotificationPermission = Notification.permission;
+	let worker: ServiceWorkerRegistration;
+	let timerWorker: Worker | undefined = undefined;
 
 	(function update() {
 		frame = requestAnimationFrame(update);
@@ -23,18 +38,20 @@
 		if (msLeft <= 0) {
 			msLeft = 0;
 			cancelAnimationFrame(frame);
-
-			if (!ended) {
-				ended = true;
-
-				if (notificationState == 'granted') {
-					new Notification('Timer ended', {
-						body: name ? `Timer ${name} ended` : 'Timer ended'
-					});
-				}
-			}
 		}
 	})();
+
+	onMount(async () => {
+		if ('serviceWorker' in navigator) {
+			worker = await navigator.serviceWorker.register('./service-worker.js', {
+				type: dev ? 'module' : 'classic'
+			});
+		}
+
+		if (!ended) {
+			runTimerWorker();
+		}
+	});
 
 	onDestroy(() => {
 		cancelAnimationFrame(frame);
@@ -45,6 +62,24 @@
 		const secondsLeft = seconds % 60;
 
 		return `${minutes}:${secondsLeft.toString().padStart(2, '0')}`;
+	}
+
+	async function runTimerWorker() {
+		const TimerWorker = await import('$lib/workers/timer.worker?worker');
+		timerWorker = new TimerWorker.default();
+
+		const message: PostMessage<TimerWorkerMessageRequest> = { endAt };
+		timerWorker.postMessage(message);
+
+		timerWorker.onmessage = (event) => {
+			const message: PostMessage<TimerWorkerMessageResponse> = event.data;
+
+			if (message.ended) {
+				worker!.showNotification(`Timer ${format(timerSeconds)}${name ? ` - ${name}` : ''}`, {
+					body: name ? `Timer ${name} ended` : 'Timer ended'
+				});
+			}
+		};
 	}
 </script>
 
