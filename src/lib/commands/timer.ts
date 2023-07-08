@@ -1,6 +1,4 @@
 import register, { deregister, type Command } from '.';
-import QRCode from 'qrcode';
-import ppqr from 'promptpay-qr';
 
 const command: Command = {
 	match: /^timer(\s+((?<minutes>\d+):)?(?<seconds>\d+)?)?/i,
@@ -8,12 +6,10 @@ const command: Command = {
 	action: async ({ reply, args }) => {
 		if (Array.isArray(args)) return;
 
-		if (!args.minutes && !args.seconds) {
+		if (!+args.minutes && !+args.seconds) {
 			reply('Usage: timer mm:ss');
 			return;
 		}
-
-		console.log(args);
 
 		if (!args.minutes) {
 			args.minutes = '0';
@@ -24,7 +20,7 @@ const command: Command = {
 		reply({
 			type: 'component',
 			message: 'timer',
-			options: { seconds }
+			options: { seconds, startAt: Date.now() }
 		});
 	}
 };
