@@ -75,7 +75,7 @@
 			const message: PostMessage<TimerWorkerMessageResponse> = event.data;
 
 			if (message.ended && notificationState == 'granted') {
-				worker!.showNotification(`Timer ${format(timerSeconds)}${name ? ` - ${name}` : ''}`, {
+				worker.showNotification(`Timer ${format(timerSeconds)}${name ? ` - ${name}` : ''}`, {
 					body: name ? `Timer ${name} ended` : 'Timer ended'
 				});
 			}

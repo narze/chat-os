@@ -10,13 +10,14 @@
 	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
 	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
-	import { fly } from 'svelte/transition';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
 	import largeType from '../lib/commands/large-type';
 	import LargeType from '../lib/commands/components/LargeType.svelte';
 	import timer from '../lib/commands/timer';
 	import Timer from '../lib/commands/components/Timer.svelte';
+	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
+	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
 	// TODO: Load & unload commands
@@ -38,14 +39,6 @@
 		largetype: LargeType,
 		timer: Timer
 	};
-
-	interface Message {
-		alt?: string;
-		self?: boolean;
-		msg: string;
-		type?: string;
-		time: Date;
-	}
 
 	let chatDiv: HTMLDivElement;
 
@@ -177,44 +170,7 @@
 		>
 			{#if $messages}
 				{#each $messages as message (message.time)}
-					<div
-						class="chat"
-						class:chat-start={!message.self}
-						class:chat-end={message.self}
-						class:chat-bot={!message.self}
-						class:chat-self={message.self}
-						transition:fly|global={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
-					>
-						<div class="chat-header">
-							<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
-							<time class="text-xs text-secondary"
-								>{message.time?.toLocaleString('en-US', {
-									weekday: 'short',
-									hour: 'numeric',
-									minute: 'numeric',
-									second: 'numeric',
-									hour12: true
-								})}</time
-							>
-						</div>
-						<div class="chat-bubble chat-bubble-primary" role="log">
-							{#if message.type == 'image'}
-								<img src={message.msg} alt={message.alt} />
-							{:else if message.type == 'link'}
-								<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a
-								>
-							{:else if message.type == 'component'}
-								{#if message.msg in Components}
-									<!-- <Renderer component={Components[message.msg]} props={{}} /> -->
-									<svelte:component this={Components[message.msg]} options={message.meta} />
-								{/if}
-							{:else}
-								{#each message.msg.split('\n') as line}
-									<div>{line}</div>
-								{/each}
-							{/if}
-						</div>
-					</div>
+					<ChatMessage {message} components={Components} />
 				{/each}
 			{/if}
 		</div>

@@ -15,4 +15,4 @@ onmessage = (message: MessageEvent<PostMessage<TimerWorkerMessageRequest>>) => {
 	}, 1000);
 };
 
-export {};
+// export {};
