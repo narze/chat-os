@@ -19,6 +19,8 @@
 
 	const isComponent = message.type == 'component';
 	let showExpandButton = false;
+	let expanded = false;
+	let expandedDialog: HTMLDialogElement;
 
 	function mouseenter() {
 		if (isComponent) {
@@ -31,7 +33,55 @@
 			showExpandButton = false;
 		}
 	}
+
+	function expand() {
+		if (isComponent) {
+			expanded = true;
+		}
+	}
+
+	function unexpand() {
+		if (isComponent) {
+			expanded = false;
+			expandedDialog.close();
+		}
+	}
+
+	$: if (expanded) {
+		if (isComponent) {
+			expandedDialog.showModal();
+		}
+	}
+
+	$: if (expandedDialog) {
+		expandedDialog.addEventListener('close', () => {
+			unexpand();
+		});
+	}
 </script>
+
+{#if isComponent}
+	<dialog bind:this={expandedDialog} class="p-0">
+		<div class="bg-primary w-[90vw] h-[90vh] relative rounded flex items-center justify-center">
+			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square" on:click={unexpand}>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="w-8 h-8"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			{#if message.msg in components}
+				<svelte:component this={components[message.msg]} options={message.meta} />
+			{/if}
+		</div>
+	</dialog>
+{/if}
 
 <div
 	class="chat"
@@ -60,7 +110,7 @@
 		on:mouseleave={mouseleave}
 	>
 		{#if showExpandButton}
-			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square">
+			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square" on:click={expand}>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
