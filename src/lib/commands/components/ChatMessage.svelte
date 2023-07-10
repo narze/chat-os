@@ -61,7 +61,7 @@
 </script>
 
 {#if isComponent}
-	<dialog bind:this={expandedDialog} class="p-0">
+	<dialog bind:this={expandedDialog} class="p-0 overflow-hidden">
 		<div
 			class="bg-primary w-[90vw] h-[90svh] relative rounded flex items-center justify-center overflow-hidden"
 		>
