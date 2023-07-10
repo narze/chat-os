@@ -83,11 +83,11 @@
 	}
 </script>
 
-<div class="p-8 flex flex-col gap-2">
-	<div class="font-semibold">
+<div class="p-8 flex flex-col gap-2 w-full items-center">
+	<div class="text-[max(2vw,1rem)] font-semibold">
 		[ Timer {format(timerSeconds)}{name ? ` - ${name}` : ''} ]
 	</div>
-	<div class="text-7xl break-all">
+	<div class="text-[max(20vw,5rem)] break-all">
 		{format(Math.ceil(msLeft / 1000))}
 	</div>
 
