@@ -17,6 +17,7 @@
 	import { dev } from '$app/environment';
 
 	export let options: Record<string, string> = {};
+	export let fullscreenMode: boolean;
 
 	const timerSeconds = +options.seconds || 60;
 	const startAt = +options.startAt;
@@ -84,12 +85,21 @@
 </script>
 
 <div class="p-8 flex flex-col gap-2 w-full items-center">
-	<div class="text-[max(2vw,1rem)] font-semibold">
-		[ Timer {format(timerSeconds)}{name ? ` - ${name}` : ''} ]
-	</div>
-	<div class="text-[max(20vw,5rem)] break-all">
-		{format(Math.ceil(msLeft / 1000))}
-	</div>
+	{#if fullscreenMode}
+		<div class="text-[max(2vw,1rem)] font-semibold">
+			[ Timer {format(timerSeconds)}{name ? ` - ${name}` : ''} ]
+		</div>
+		<div class="text-[max(20vw,5rem)] break-all">
+			{format(Math.ceil(msLeft / 1000))}
+		</div>
+	{:else}
+		<div class="font-semibold">
+			[ Timer {format(timerSeconds)}{name ? ` - ${name}` : ''} ]
+		</div>
+		<div class="text-7xl break-all">
+			{format(Math.ceil(msLeft / 1000))}
+		</div>
+	{/if}
 
 	{#if msLeft > 0}
 		{#if notificationState == 'default'}

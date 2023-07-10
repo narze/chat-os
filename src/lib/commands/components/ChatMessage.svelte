@@ -77,7 +77,11 @@
 			</button>
 
 			{#if message.msg in components}
-				<svelte:component this={components[message.msg]} options={message.meta} />
+				<svelte:component
+					this={components[message.msg]}
+					options={message.meta}
+					fullscreenMode={true}
+				/>
 			{/if}
 		</div>
 	</dialog>
