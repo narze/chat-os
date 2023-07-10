@@ -62,7 +62,9 @@
 
 {#if isComponent}
 	<dialog bind:this={expandedDialog} class="p-0">
-		<div class="bg-primary w-[90vw] h-[90vh] relative rounded flex items-center justify-center">
+		<div
+			class="bg-primary w-[90vw] h-[90svh] relative rounded flex items-center justify-center overflow-hidden"
+		>
 			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square" on:click={unexpand}>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -76,12 +78,14 @@
 				</svg>
 			</button>
 
-			{#if message.msg in components}
-				<svelte:component
-					this={components[message.msg]}
-					options={message.meta}
-					fullscreenMode={true}
-				/>
+			{#if expanded}
+				{#if message.msg in components}
+					<svelte:component
+						this={components[message.msg]}
+						options={message.meta}
+						fullscreenMode={true}
+					/>
+				{/if}
 			{/if}
 		</div>
 	</dialog>
