@@ -21,3 +21,13 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 import { getAuth } from 'firebase/auth';
 export const auth = getAuth(app);
+
+// Function to get the user state
+export async function getUserAuthState() {
+	return new Promise((resolve, reject) => {
+		const unsubscribe = auth.onAuthStateChanged((user) => {
+			unsubscribe(); // Unsubscribe the listener once it's triggered
+			resolve(user); // Resolve the promise with the user object
+		}, reject);
+	});
+}

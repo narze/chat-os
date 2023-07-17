@@ -1,10 +1,12 @@
 <script lang="ts">
   import { auth } from "$lib/firebase";
 	import { GoogleAuthProvider, signInWithPopup, type User } from "firebase/auth";
+  import type { PageData } from './$types';
 
   const provider = new GoogleAuthProvider();
 
-  let user: User
+  export let data: PageData;
+  let user: User | null = data.user as User
 
   function signIn() {
     signInWithPopup(auth, provider)
@@ -27,13 +29,22 @@
         // ...
       });
   }
+
+  function logOut() {
+    auth.signOut().then(() => {
+      user = null
+    }).catch((error) => {
+      // An error happened.
+    });
+  }
 </script>
 
 {#if user}
   <p>Logged in as {user.displayName}</p>
+  <button class="btn btn-secondary" on:click={logOut}>Logout</button>
 {:else}
   <p>
     Not logged in
-    <button class="btn btn-primary" on:click={signIn}>Sign in with Google</button>
   </p>
+  <button class="btn btn-primary" on:click={signIn}>Sign in with Google</button>
 {/if}
