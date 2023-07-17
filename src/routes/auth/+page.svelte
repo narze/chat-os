@@ -6,7 +6,7 @@
   const provider = new GoogleAuthProvider();
 
   export let data: PageData;
-  let user: User | null = data.user as User
+  let user = data.user
 
   function signIn() {
     signInWithPopup(auth, provider)

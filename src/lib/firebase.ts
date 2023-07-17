@@ -19,11 +19,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
-import { getAuth } from 'firebase/auth';
+import { getAuth, type User } from 'firebase/auth';
 export const auth = getAuth(app);
 
 // Function to get the user state
-export async function getUserAuthState() {
+export async function getUserAuthState(): Promise<User | null> {
 	return new Promise((resolve, reject) => {
 		const unsubscribe = auth.onAuthStateChanged((user) => {
 			unsubscribe(); // Unsubscribe the listener once it's triggered
