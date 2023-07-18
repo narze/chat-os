@@ -1,8 +1,8 @@
-import { getUserAuthState } from '../lib/firebase';
+import { userStore } from '../lib/firebase-store';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async (event) => {
-	const user = await getUserAuthState();
+	const user = userStore();
 
 	return {
 		user
