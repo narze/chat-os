@@ -1,39 +1,26 @@
 <script lang="ts">
 	import { handleMessage } from '../lib/commands';
-	import hi from '../lib/commands/hi';
-	import ping from '../lib/commands/ping';
-	import slowping from '../lib/commands/slowping';
-	import others from '../lib/commands/others';
-	import about from '../lib/commands/about';
-	import qr from '../lib/commands/qr';
-	import pp from '../lib/commands/promptpay-qr';
-	import chatlog from '../lib/commands/chatlog';
 	import unknownCommand from '../lib/commands/unknown';
 	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
-	import largeType from '../lib/commands/large-type';
 	import LargeType from '../lib/commands/components/LargeType.svelte';
-	import timer from '../lib/commands/timer';
 	import Timer from '../lib/commands/components/Timer.svelte';
 	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
 	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
-	// TODO: Load & unload commands
-	const commands = [
-		hi(),
-		ping(),
-		slowping(),
-		others(),
-		qr(),
-		pp(),
-		about(),
-		chatlog(),
-		largeType(),
-		timer(),
-		unknownCommand() // Make this the last one
-	];
+  // const components = import.meta.glob("../lib/commands/components/*.svelte", { eager: true }) as Record<string, {default: typeof SvelteComponent<any>}>;
+  // const pages = Object.keys(components).map((key) => components[key].default);
+
+  const commandsLoader = import.meta.glob("../lib/commands/*.ts", { eager: true }) as Record<string, {default: () => void}>;
+  const cmd = Object.entries(commandsLoader)
+                    .filter(([name, _]) => !name.endsWith("index.ts"))
+                    .map(([_, module]) => module.default);
+
+  // Makes unknownCommand the last command
+	const commands = reorderCommands(cmd, [unknownCommand]);
+  commands.forEach((command) => command());
 
 	const Components: Record<string, typeof SvelteComponent<any>> = {
 		largetype: LargeType,
@@ -154,6 +141,17 @@
 			});
 		}
 	}
+
+  function reorderCommands(input: any[], argsToBack: any[]) {
+    input.sort(function(a, b) {
+      if (argsToBack.includes(b)) {
+        return -1; // Move b to the back
+      }
+      return 0; // Maintain the original order
+    });
+
+    return input;
+}
 </script>
 
 <svelte:head>
