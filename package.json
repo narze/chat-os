@@ -30,7 +30,7 @@
 		"fitty": "^2.3.7",
 		"postcss": "^8.4.26",
 		"postcss-load-config": "^4.0.1",
-		"prettier": "^3.0.0",
+		"prettier": "^2.8.8",
 		"prettier-plugin-svelte": "^2.10.1",
 		"promptpay-qr": "^0.5.0",
 		"qrcode": "^1.5.3",

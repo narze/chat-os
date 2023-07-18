@@ -10,17 +10,20 @@
 	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
 
-  // const components = import.meta.glob("../lib/commands/components/*.svelte", { eager: true }) as Record<string, {default: typeof SvelteComponent<any>}>;
-  // const pages = Object.keys(components).map((key) => components[key].default);
+	// const components = import.meta.glob("../lib/commands/components/*.svelte", { eager: true }) as Record<string, {default: typeof SvelteComponent<any>}>;
+	// const pages = Object.keys(components).map((key) => components[key].default);
 
-  const commandsLoader = import.meta.glob("../lib/commands/*.ts", { eager: true }) as Record<string, {default: () => void}>;
-  const cmd = Object.entries(commandsLoader)
-                    .filter(([name, _]) => !name.endsWith("index.ts"))
-                    .map(([_, module]) => module.default);
+	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
+		string,
+		{ default: () => void }
+	>;
+	const cmd = Object.entries(commandsLoader)
+		.filter(([name, _]) => !name.endsWith('index.ts'))
+		.map(([_, module]) => module.default);
 
-  // Makes unknownCommand the last command
+	// Makes unknownCommand the last command
 	const commands = reorderCommands(cmd, [unknownCommand]);
-  commands.forEach((command) => command());
+	commands.forEach((command) => command());
 
 	const Components: Record<string, typeof SvelteComponent<any>> = {
 		largetype: LargeType,
@@ -142,16 +145,16 @@
 		}
 	}
 
-  function reorderCommands(input: any[], argsToBack: any[]) {
-    input.sort(function(a, b) {
-      if (argsToBack.includes(b)) {
-        return -1; // Move b to the back
-      }
-      return 0; // Maintain the original order
-    });
+	function reorderCommands(input: any[], argsToBack: any[]) {
+		input.sort(function (a, b) {
+			if (argsToBack.includes(b)) {
+				return -1; // Move b to the back
+			}
+			return 0; // Maintain the original order
+		});
 
-    return input;
-}
+		return input;
+	}
 </script>
 
 <svelte:head>
