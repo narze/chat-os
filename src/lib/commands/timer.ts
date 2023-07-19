@@ -1,4 +1,5 @@
-import register, { deregister, type Command } from '.';
+import register, { deregister, type Command, type Components } from '.';
+import Timer from './components/Timer.svelte';
 
 const command: Command = {
 	match: /^timer(\s+((?<minutes>\d+):)?(?<seconds>\d+)?)?(\s+(?<name>.+))?/i,
@@ -24,6 +25,8 @@ const command: Command = {
 		});
 	}
 };
+
+export const components: Components = { timer: Timer };
 
 export default function () {
 	register(command);

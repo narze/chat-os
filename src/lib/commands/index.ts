@@ -1,3 +1,4 @@
+import type { SvelteComponent } from 'svelte';
 import ChatMessageEvent from '../ChatMessageEvent';
 
 export const eventTarget = new EventTarget();
@@ -6,6 +7,8 @@ export interface Command {
 	match: string | RegExp;
 	action: Action;
 }
+
+export type Components = Record<string, typeof SvelteComponent<any>>;
 
 export type Message = string | MessageObject;
 export interface MessageObject {

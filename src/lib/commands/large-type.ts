@@ -1,4 +1,5 @@
-import register, { deregister, type Command } from '.';
+import register, { deregister, type Command, type Components } from '.';
+import LargeType from './components/LargeType.svelte';
 
 const command: Command = {
 	match: /^large(type)?(\s+(.+))/i,
@@ -20,6 +21,8 @@ const command: Command = {
 		});
 	}
 };
+
+export const components: Components = { largetype: LargeType };
 
 export default function () {
 	register(command);

@@ -4,18 +4,14 @@
 	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
-	import LargeType from '../lib/commands/components/LargeType.svelte';
-	import Timer from '../lib/commands/components/Timer.svelte';
 	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
 	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
+	import type { Components } from '../lib/commands';
 	// import Renderer from '../lib/commands/components/Renderer.svelte';
-
-	// const components = import.meta.glob("../lib/commands/components/*.svelte", { eager: true }) as Record<string, {default: typeof SvelteComponent<any>}>;
-	// const pages = Object.keys(components).map((key) => components[key].default);
 
 	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
 		string,
-		{ default: () => void }
+		{ default: () => void; components?: Components }
 	>;
 	const cmd = Object.entries(commandsLoader)
 		.filter(([name, _]) => !name.endsWith('index.ts'))
@@ -25,10 +21,11 @@
 	const commands = reorderCommands(cmd, [unknownCommand]);
 	commands.forEach((command) => command());
 
-	const Components: Record<string, typeof SvelteComponent<any>> = {
-		largetype: LargeType,
-		timer: Timer
-	};
+	// Load components
+	const components: Components = Object.entries(commandsLoader)
+		.filter(([name, _]) => !name.endsWith('index.ts'))
+		.map(([_, module]) => module.components)
+		.reduce((a, b) => ({ ...a, ...b }), {})!;
 
 	let chatDiv: HTMLDivElement;
 
@@ -171,7 +168,7 @@
 		>
 			{#if $messages}
 				{#each $messages as message (message.time)}
-					<ChatMessage {message} components={Components} />
+					<ChatMessage {message} {components} />
 				{/each}
 			{/if}
 		</div>

@@ -1,16 +1,19 @@
-import register, { deregister, type Command } from '.';
+import register, { deregister, type Command, type Components } from '.';
+import Login from './components/Login.svelte';
 
 const command: Command = {
 	match: /^login$/i,
 
 	action: async ({ reply, args }) => {
 		reply({
-			type: 'text',
-			message: 'TODO: login'
+			type: 'component',
+			message: 'login'
 			// options: { seconds, startAt: Date.now(), name: args.name }
 		});
 	}
 };
+
+export const components: Components = { login: Login };
 
 export default function () {
 	register(command);

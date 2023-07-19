@@ -1,3 +1,5 @@
+import type { SvelteComponent } from 'svelte';
+
 export default class ChatMessageEvent extends Event {
 	public data;
 
