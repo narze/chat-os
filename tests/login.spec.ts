@@ -10,5 +10,5 @@ test('login', async ({ page }) => {
 	await chatOS.input('login');
 
 	await chatOS.waitForResponse();
-	await chatOS.expectLastMessage(/Login/i, true);
+	await chatOS.expectLastMessage(/Sign in/i, true);
 });
