@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
+		"dev:firebase": "firebase emulators:start",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "playwright test",

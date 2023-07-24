@@ -19,8 +19,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
-import { getAuth, type User } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, type User } from 'firebase/auth';
 export const auth = getAuth(app);
+
+// Connect to Firebase Emulator
+if (process.env.NODE_ENV === 'development') {
+	connectAuthEmulator(auth, 'http://localhost:9099');
+}
 
 // Function to get the user state
 export async function getUserAuthState(): Promise<User | null> {
