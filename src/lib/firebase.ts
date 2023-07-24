@@ -20,11 +20,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 import { getAuth, connectAuthEmulator, type User } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+
 export const auth = getAuth(app);
+export const firestore = getFirestore(app);
 
 // Connect to Firebase Emulator
 if (process.env.NODE_ENV === 'development') {
 	connectAuthEmulator(auth, 'http://localhost:9099');
+	connectFirestoreEmulator(firestore, 'localhost', 8080);
 }
 
 // Function to get the user state

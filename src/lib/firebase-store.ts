@@ -27,3 +27,60 @@ export function userStore() {
 
 	return { subscribe };
 }
+
+// Firestore
+
+import {
+	type Firestore,
+	type Query,
+	type CollectionReference,
+	collection,
+	onSnapshot,
+	addDoc,
+	type DocumentData
+} from 'firebase/firestore';
+
+export function collectionStore<T>(
+	firestore: Firestore,
+	ref: string | Query | CollectionReference,
+	startWith: T[] = []
+) {
+	let unsubscribe: () => void;
+
+	// Fallback for SSR
+	if (!firestore || !globalThis.window) {
+		console.warn('Firestore is not initialized or not in browser');
+		const { subscribe } = writable(startWith);
+		return {
+			subscribe,
+			ref: null,
+			add: null
+		};
+	}
+
+	const colRef =
+		typeof ref === 'string'
+			? collection(firestore, ref)
+			: (ref as CollectionReference<DocumentData, DocumentData>);
+
+	function add(data: Omit<T, 'id'>) {
+		return addDoc(colRef, data as DocumentData);
+	}
+
+	const { subscribe } = writable(startWith, (set) => {
+		unsubscribe = onSnapshot(colRef, (snapshot) => {
+			const data = snapshot.docs.map((s) => {
+				return { id: s.id, ref: s.ref, ...s.data() } as T;
+			});
+			set(data);
+		});
+
+		return () => unsubscribe();
+	});
+
+	return {
+		subscribe,
+		ref: colRef,
+		add
+	};
+}

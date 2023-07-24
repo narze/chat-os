@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { handleMessage } from '../lib/commands';
 	import unknownCommand from '../lib/commands/unknown';
-	import { SvelteComponent, onDestroy, onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { db } from '../lib/db';
 	import { liveQuery, type Observable } from 'dexie';
 	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
