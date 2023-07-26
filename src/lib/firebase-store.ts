@@ -47,17 +47,6 @@ export function collectionStore<T>(
 ) {
 	let unsubscribe: () => void;
 
-	// Fallback for SSR
-	if (!firestore || !globalThis.window) {
-		console.warn('Firestore is not initialized or not in browser');
-		const { subscribe } = writable(startWith);
-		return {
-			subscribe,
-			ref: null,
-			add: null
-		};
-	}
-
 	const colRef =
 		typeof ref === 'string'
 			? collection(firestore, ref)
@@ -67,11 +56,23 @@ export function collectionStore<T>(
 		return addDoc(colRef, data as DocumentData);
 	}
 
-	const { subscribe } = writable(startWith, (set) => {
+	// Fallback for SSR
+	if (!firestore || !globalThis.window) {
+		console.warn('Firestore is not initialized or not in browser');
+		const { subscribe } = writable(undefined);
+		return {
+			subscribe,
+			ref: colRef,
+			add
+		};
+	}
+
+	const { subscribe } = writable<T[] | undefined>(undefined, (set) => {
 		unsubscribe = onSnapshot(colRef, (snapshot) => {
 			const data = snapshot.docs.map((s) => {
 				return { id: s.id, ref: s.ref, ...s.data() } as T;
 			});
+
 			set(data);
 		});
 

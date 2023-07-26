@@ -21,7 +21,7 @@ const command: Command = {
 		reply({
 			type: 'component',
 			message: 'timer',
-			options: { seconds, startAt: Date.now(), name: args.name }
+			options: { seconds, startAt: Date.now(), name: args.name || null }
 		});
 	}
 };

@@ -1,13 +1,24 @@
+<script lang="ts" context="module">
+	export interface Log {
+		message: string;
+		self: boolean;
+		time: Timestamp;
+		type: string;
+		alt?: string;
+		meta?: Record<string, any>;
+	}
+</script>
+
 <script lang="ts">
 	import { handleMessage } from '../lib/commands';
 	import unknownCommand from '../lib/commands/unknown';
 	import { onDestroy, onMount, tick } from 'svelte';
-	import { db } from '../lib/db';
-	import { liveQuery, type Observable } from 'dexie';
 	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
 	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
 	import type { Components } from '../lib/commands';
-	// import Renderer from '../lib/commands/components/Renderer.svelte';
+	import { firestore } from '../lib/firebase';
+	import { collectionStore } from '../lib/firebase-store';
+	import { Timestamp, collection, orderBy, query } from 'firebase/firestore';
 
 	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
 		string,
@@ -32,35 +43,20 @@
 	let messageInput: string = '';
 	let dbReady = false;
 
-	$: messages = liveQuery(async () => {
-		const chatLogs = await db.chatLogs.toArray();
+	const messagesQuery = query(collection(firestore, 'logs'), orderBy('time'));
+	const messages = collectionStore<Log>(firestore, messagesQuery);
+	const messagesCollection = collectionStore<Log>(firestore, 'logs');
 
-		const messages = chatLogs.map((log) => ({
-			self: !log.isBot,
-			msg: log.message,
-			time: log.time,
-			type: log.type,
-			alt: log.alt,
-			meta: log.meta
-		}));
+	$: dbReady = messages !== undefined;
 
-		return messages;
-	}) satisfies Observable<Message[]>;
-
-	onMount(async () => {
-		db.on('ready', () => {
-			dbReady = true;
+	$: if (dbReady && $messages?.length === 0) {
+		messagesCollection.add({
+			self: false,
+			message: `Hello! I'm ChatOS! How can I help?`,
+			time: new Date() as unknown as Timestamp,
+			type: 'text'
 		});
-
-		if ((await db.chatLogs.count()) == 0) {
-			db.chatLogs.add({
-				isBot: true,
-				message: `Hello! I'm ChatOS! How can I help?`,
-				time: new Date(),
-				type: 'text'
-			});
-		}
-	});
+	}
 
 	onDestroy(() => {
 		commands.forEach((deregister) => deregister());
@@ -83,7 +79,7 @@
 
 	$: if (chatDiv && $messages?.length) {
 		tick().then(() => {
-			if ($messages[$messages.length - 1]?.self) {
+			if ($messages?.[$messages.length - 1]?.self) {
 				scrollToBottom(chatDiv, 'auto');
 			} else {
 				debouncedScrollToBottom(chatDiv, 'smooth');
@@ -92,7 +88,7 @@
 	}
 
 	$: if ($messages && $messages[$messages.length - 1]?.self) {
-		const lastMsg = $messages[$messages.length - 1].msg;
+		const lastMsg = $messages[$messages.length - 1].message;
 
 		handleMessage(lastMsg, onBotReply, onBotCommand);
 	}
@@ -109,36 +105,39 @@
 			return;
 		}
 
-		await db.chatLogs.add({
-			isBot: false,
+		// Add to Firestore
+		await messagesCollection.add({
+			self: true,
 			message: messageInput,
-			time: new Date(),
+			time: new Date() as unknown as Timestamp,
 			type: 'text'
 		});
+
+		// TODO: Handle message instead of handling on snapshot
+		// to support single bot response in multiple tabs
 
 		messageInput = '';
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
 		setTimeout(async () => {
-			await db.chatLogs.add({
-				isBot: true,
+			const data = {
+				self: false,
 				message: msg,
-				time: new Date(),
+				time: new Date() as unknown as Timestamp,
 				type: type,
-				alt: options.alt,
+				alt: options.alt || null,
 				meta: options
-			});
+			};
+			console.log({ data });
+
+			await messagesCollection.add(data);
 		}, 100);
 	}
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
-			db.on('ready', () => {
-				setTimeout(async () => {
-					await db.chatLogs.clear();
-				}, 10);
-			});
+			// TODO: Hide messages instead of deleting them
 		}
 	}
 
