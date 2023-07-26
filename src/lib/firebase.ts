@@ -20,10 +20,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 import { getAuth, connectAuthEmulator, type User } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import {
+	connectFirestoreEmulator,
+	initializeFirestore,
+	persistentLocalCache,
+	persistentMultipleTabManager
+} from 'firebase/firestore';
 
 export const auth = getAuth(app);
-export const firestore = getFirestore(app);
+export const firestore = initializeFirestore(app, {
+	localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 // Connect to Firebase Emulator
 if (process.env.NODE_ENV === 'development') {
