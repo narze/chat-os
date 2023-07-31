@@ -20,7 +20,7 @@
 	import type { Components } from '../lib/commands';
 	import { firestore } from '../lib/firebase';
 	import { collectionStore } from '../lib/firebase-store';
-	import { Timestamp, collection, orderBy, query, where } from 'firebase/firestore';
+	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
 	import { browser } from '$app/environment';
 	import type { PageData } from './$types';
 
@@ -46,22 +46,32 @@
 		.reduce((a, b) => ({ ...a, ...b }), {})!;
 
 	let chatDiv: HTMLDivElement;
-	$: sessionId = $user?.uid || (browser ? localStorage.getItem('sessionId') : '') || nanoid();
 	let messageInput: string = '';
 	let dbReady = false;
+
+	// TODO: Merge guest's messages when they sign in
+	let sessionId: string;
+	let messagesQuery: ReturnType<typeof query<DocumentData, DocumentData>>;
+	let messages: ReturnType<typeof collectionStore<Log>>;
+	let messagesCollection: ReturnType<typeof collectionStore<Log>>;
+
+	$: if ($user) {
+		sessionId = $user.uid;
+
+		messagesQuery = query(collection(firestore, `users/${sessionId}/messages`), orderBy('time'));
+		messages = collectionStore<Log>(firestore, messagesQuery);
+		messagesCollection = collectionStore<Log>(firestore, `users/${sessionId}/messages`);
+	} else if ($user !== undefined) {
+		sessionId = (browser ? localStorage.getItem('sessionId') : '') || nanoid();
+
+		messagesQuery = query(collection(firestore, `guests/${sessionId}/messages`), orderBy('time'));
+		messages = collectionStore<Log>(firestore, messagesQuery);
+		messagesCollection = collectionStore<Log>(firestore, `guests/${sessionId}/messages`);
+	}
 
 	$: if (browser && sessionId && $user !== undefined && $user === null) {
 		localStorage.setItem('sessionId', sessionId);
 	}
-
-	$: messagesQuery = query(
-		collection(firestore, 'logs'),
-		orderBy('time'),
-		where('sessionId', '==', sessionId)
-	);
-	$: messages = collectionStore<Log>(firestore, messagesQuery);
-
-	let messagesCollection = collectionStore<Log>(firestore, 'logs');
 
 	$: dbReady = messages !== undefined;
 
