@@ -119,9 +119,7 @@
 		const message = messageInput;
 		messageInput = '';
 
-		// if (!sessionId?.length) {
-		// 	sessionId = nanoid();
-		// }
+		handleMessage(message, onBotReply, onBotCommand);
 
 		// Add to Firestore
 		await messagesCollection.add({
@@ -131,8 +129,6 @@
 			type: 'text',
 			sessionId
 		});
-
-		handleMessage(message, onBotReply, onBotCommand);
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
