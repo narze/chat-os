@@ -12,8 +12,7 @@
 <script lang="ts">
 	import { handleMessage } from '../lib/commands';
 	import unknownCommand from '../lib/commands/unknown';
-	import { onDestroy, onMount, tick } from 'svelte';
-	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
+	import { onDestroy, tick } from 'svelte';
 	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
 	import type { Components } from '../lib/commands';
 	import { firestore } from '../lib/firebase';
@@ -53,7 +52,7 @@
 		messagesCollection.add({
 			self: false,
 			message: `Hello! I'm ChatOS! How can I help?`,
-			time: new Date() as unknown as Timestamp,
+			time: Timestamp.now(),
 			type: 'text'
 		});
 	}
@@ -109,7 +108,7 @@
 		await messagesCollection.add({
 			self: true,
 			message: messageInput,
-			time: new Date() as unknown as Timestamp,
+			time: Timestamp.now(),
 			type: 'text'
 		});
 
@@ -124,7 +123,7 @@
 			const data = {
 				self: false,
 				message: msg,
-				time: new Date() as unknown as Timestamp,
+				time: Timestamp.now(),
 				type: type,
 				alt: options.alt || null,
 				meta: options
