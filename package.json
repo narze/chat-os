@@ -29,6 +29,7 @@
 		"eslint-plugin-svelte": "^2.32.2",
 		"firebase": "^10.0.0",
 		"fitty": "^2.3.7",
+		"nanoid": "^4.0.2",
 		"postcss": "^8.4.26",
 		"postcss-load-config": "^4.0.1",
 		"prettier": "^3.0.0",

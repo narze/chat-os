@@ -7,10 +7,12 @@
 		type: string;
 		alt?: string;
 		meta?: Record<string, any>;
+		sessionId: string;
 	}
 </script>
 
 <script lang="ts">
+	import { nanoid } from 'nanoid';
 	import { handleMessage } from '../lib/commands';
 	import unknownCommand from '../lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
@@ -18,7 +20,8 @@
 	import type { Components } from '../lib/commands';
 	import { firestore } from '../lib/firebase';
 	import { collectionStore } from '../lib/firebase-store';
-	import { Timestamp, collection, orderBy, query } from 'firebase/firestore';
+	import { Timestamp, collection, orderBy, query, where } from 'firebase/firestore';
+	import { browser } from '$app/environment';
 
 	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
 		string,
@@ -39,13 +42,23 @@
 		.reduce((a, b) => ({ ...a, ...b }), {})!;
 
 	let chatDiv: HTMLDivElement;
-
+	let sessionId: string = (browser ? localStorage.getItem('sessionId') : '') || nanoid();
 	let messageInput: string = '';
 	let dbReady = false;
 
-	const messagesQuery = query(collection(firestore, 'logs'), orderBy('time'));
+	$: if (sessionId && browser) {
+		localStorage.setItem('sessionId', sessionId);
+	}
+
+	const messagesQuery = query(
+		collection(firestore, 'logs'),
+		orderBy('time'),
+		where('sessionId', '==', sessionId)
+	);
 	const messages = collectionStore<Log>(firestore, messagesQuery);
 	const messagesCollection = collectionStore<Log>(firestore, 'logs');
+
+	let systemMessages: Log[] = [];
 
 	$: dbReady = messages !== undefined;
 
@@ -54,7 +67,8 @@
 			self: false,
 			message: `Hello! I'm ChatOS! How can I help?`,
 			time: Timestamp.now(),
-			type: 'text'
+			type: 'text',
+			sessionId
 		});
 	}
 
@@ -99,17 +113,23 @@
 			return;
 		}
 
+		const message = messageInput;
+		messageInput = '';
+
+		// if (!sessionId?.length) {
+		// 	sessionId = nanoid();
+		// }
+
 		// Add to Firestore
 		await messagesCollection.add({
 			self: true,
-			message: messageInput,
+			message: message,
 			time: Timestamp.now(),
-			type: 'text'
+			type: 'text',
+			sessionId
 		});
 
-		handleMessage(messageInput, onBotReply, onBotCommand);
-
-		messageInput = '';
+		handleMessage(message, onBotReply, onBotCommand);
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
@@ -120,9 +140,9 @@
 				time: Timestamp.now(),
 				type: type,
 				alt: options.alt || null,
-				meta: options
+				meta: options,
+				sessionId
 			};
-			console.log({ data });
 
 			await messagesCollection.add(data);
 		}, 100);
@@ -158,6 +178,9 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
+			{#each systemMessages as message (message.id)}
+				<ChatMessage {message} {components} />
+			{/each}
 			{#if $messages}
 				{#each $messages as message (message.id)}
 					<ChatMessage {message} {components} />
