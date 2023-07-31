@@ -22,6 +22,10 @@
 	import { collectionStore } from '../lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, where } from 'firebase/firestore';
 	import { browser } from '$app/environment';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+	let { user } = data;
 
 	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
 		string,
@@ -42,23 +46,22 @@
 		.reduce((a, b) => ({ ...a, ...b }), {})!;
 
 	let chatDiv: HTMLDivElement;
-	let sessionId: string = (browser ? localStorage.getItem('sessionId') : '') || nanoid();
+	$: sessionId = $user?.uid || (browser ? localStorage.getItem('sessionId') : '') || nanoid();
 	let messageInput: string = '';
 	let dbReady = false;
 
-	$: if (sessionId && browser) {
+	$: if (browser && sessionId && $user !== undefined && $user === null) {
 		localStorage.setItem('sessionId', sessionId);
 	}
 
-	const messagesQuery = query(
+	$: messagesQuery = query(
 		collection(firestore, 'logs'),
 		orderBy('time'),
 		where('sessionId', '==', sessionId)
 	);
-	const messages = collectionStore<Log>(firestore, messagesQuery);
-	const messagesCollection = collectionStore<Log>(firestore, 'logs');
+	$: messages = collectionStore<Log>(firestore, messagesQuery);
 
-	let systemMessages: Log[] = [];
+	let messagesCollection = collectionStore<Log>(firestore, 'logs');
 
 	$: dbReady = messages !== undefined;
 
@@ -178,9 +181,6 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#each systemMessages as message (message.id)}
-				<ChatMessage {message} {components} />
-			{/each}
 			{#if $messages}
 				{#each $messages as message (message.id)}
 					<ChatMessage {message} {components} />
