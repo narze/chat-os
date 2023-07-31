@@ -87,12 +87,6 @@
 		});
 	}
 
-	$: if ($messages && $messages[$messages.length - 1]?.self) {
-		const lastMsg = $messages[$messages.length - 1].message;
-
-		handleMessage(lastMsg, onBotReply, onBotCommand);
-	}
-
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
@@ -113,8 +107,7 @@
 			type: 'text'
 		});
 
-		// TODO: Handle message instead of handling on snapshot
-		// to support single bot response in multiple tabs
+		handleMessage(messageInput, onBotReply, onBotCommand);
 
 		messageInput = '';
 	}
