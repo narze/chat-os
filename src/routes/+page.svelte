@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
 	export interface Log {
+		id: string;
 		message: string;
 		self: boolean;
 		time: Timestamp;
@@ -165,7 +166,7 @@
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
 			{#if $messages}
-				{#each $messages as message (message.time)}
+				{#each $messages as message (message.id)}
 					<ChatMessage {message} {components} />
 				{/each}
 			{/if}
