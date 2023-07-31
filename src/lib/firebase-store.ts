@@ -43,7 +43,7 @@ import {
 export function collectionStore<T>(
 	firestore: Firestore,
 	ref: string | Query | CollectionReference,
-	startWith: T[] = []
+	startWith?: T[]
 ) {
 	let unsubscribe: () => void;
 
@@ -59,7 +59,7 @@ export function collectionStore<T>(
 	// Fallback for SSR
 	if (!firestore || !globalThis.window) {
 		console.warn('Firestore is not initialized or not in browser');
-		const { subscribe } = writable(undefined);
+		const { subscribe } = writable(startWith);
 		return {
 			subscribe,
 			ref: colRef,
@@ -67,7 +67,7 @@ export function collectionStore<T>(
 		};
 	}
 
-	const { subscribe } = writable<T[] | undefined>(undefined, (set) => {
+	const { subscribe } = writable<T[] | undefined>(startWith, (set) => {
 		unsubscribe = onSnapshot(colRef, (snapshot) => {
 			const data = snapshot.docs.map((s) => {
 				return { id: s.id, ref: s.ref, ...s.data() } as T;
