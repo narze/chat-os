@@ -6,8 +6,18 @@
 	const provider = new GoogleAuthProvider();
 	const user = userStore();
 
-	function signIn() {
-		signInWithPopup(auth, provider);
+	async function signIn() {
+		const user = await signInWithPopup(auth, provider);
+
+		// FIXME: Sync user's data without reloading the page
+		location.reload();
+	}
+
+	async function signOut() {
+		await auth.signOut();
+
+		// FIXME: Sync user's data without reloading the page
+		location.reload();
 	}
 </script>
 
@@ -18,7 +28,7 @@
 	<button class="btn btn-sm btn-secondary" on:click={() => alert('Work in progress...')}
 		>Sync chat</button
 	>
-	<button class="btn btn-sm btn-default" on:click={() => auth.signOut()}>Sign out</button>
+	<button class="btn btn-sm btn-default" on:click={signOut}>Sign out</button>
 {:else}
 	<p>Not logged in</p>
 	<button class="btn btn-sm btn-secondary" on:click={signIn}>Sign in with Google</button>
