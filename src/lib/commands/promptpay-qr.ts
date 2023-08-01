@@ -9,7 +9,9 @@ const command: Command = {
 
 		if (!args[1]) {
 			reply('Please enter PromptPay number after "pp" to generate a QR code, amount is optional');
-			reply('pp [promptpay no.] [amount]');
+			setTimeout(() => {
+				reply('pp [promptpay no.] [amount]');
+			}, 50);
 			return;
 		}
 
