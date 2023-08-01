@@ -49,6 +49,13 @@
 					meta: log.meta || {}
 				});
 			});
+
+			messagesCollection.add({
+				self: false,
+				message: `Synced ${chatLogs.length} entries of chat logs in guest session to your account`,
+				time: Timestamp.now(),
+				type: 'text'
+			});
 		}
 	}
 </script>
