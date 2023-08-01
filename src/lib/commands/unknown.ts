@@ -1,4 +1,4 @@
-import register, { deregister, type Command } from '.';
+import register, { type Command, deregister } from '.';
 
 const command: Command = {
 	match: /.?/i,

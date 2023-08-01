@@ -13,21 +13,23 @@
 
 <script lang="ts">
 	import { nanoid } from 'nanoid';
-	import { handleMessage } from '../lib/commands';
-	import unknownCommand from '../lib/commands/unknown';
+	import { handleMessage } from '$lib/commands';
+	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
-	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
-	import type { Components } from '../lib/commands';
-	import { firestore } from '../lib/firebase';
-	import { collectionStore } from '../lib/firebase-store';
+	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
+	import type { Components, Message } from '$lib/commands';
+	import { firestore } from '$lib/firebase';
+	import { collectionStore } from '$lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
 	import { browser } from '$app/environment';
 	import type { PageData } from './$types';
+	import { liveQuery, type Observable } from 'dexie';
+	import { db } from '$lib/db';
 
 	export let data: PageData;
 	let { user } = data;
 
-	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
+	const commandsLoader = import.meta.glob('$lib/commands/*.ts', { eager: true }) as Record<
 		string,
 		{ default: () => void; components?: Components }
 	>;

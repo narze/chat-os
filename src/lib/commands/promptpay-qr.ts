@@ -1,6 +1,7 @@
-import register, { deregister, type Command } from '.';
-import QRCode from 'qrcode';
 import ppqr from 'promptpay-qr';
+import QRCode from 'qrcode';
+
+import register, { type Command, deregister } from '.';
 
 const command: Command = {
 	match: /^pp(\s+(\S+))?(\s+(\S+))?/i,

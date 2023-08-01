@@ -1,6 +1,16 @@
-import { writable } from 'svelte/store';
-import { auth } from './firebase';
 import type { User } from 'firebase/auth';
+import {
+	type CollectionReference,
+	type DocumentData,
+	type Firestore,
+	type Query,
+	addDoc,
+	collection,
+	onSnapshot
+} from 'firebase/firestore';
+import { writable } from 'svelte/store';
+
+import { auth } from './firebase';
 
 /**
  * The userStore is updated whenever the authentication state changes.
@@ -27,18 +37,6 @@ export function userStore() {
 
 	return { subscribe };
 }
-
-// Firestore
-
-import {
-	type Firestore,
-	type Query,
-	type CollectionReference,
-	collection,
-	onSnapshot,
-	addDoc,
-	type DocumentData
-} from 'firebase/firestore';
 
 export function collectionStore<T>(
 	firestore: Firestore,

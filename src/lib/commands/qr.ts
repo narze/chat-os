@@ -1,5 +1,6 @@
-import register, { deregister, type Command } from '.';
 import QRCode from 'qrcode';
+
+import register, { type Command, deregister } from '.';
 
 const command: Command = {
 	match: /^qr(\s+(\S+))?/i,

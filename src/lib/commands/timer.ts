@@ -1,4 +1,4 @@
-import register, { deregister, type Command, type Components } from '.';
+import register, { type Command, type Components, deregister } from '.';
 import Timer from './components/Timer.svelte';
 
 const command: Command = {
