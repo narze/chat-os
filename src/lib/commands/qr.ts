@@ -8,7 +8,10 @@ const command: Command = {
 
 		if (!args[1]) {
 			reply('Please enter text after "qr" to generate a QR code');
-			reply('qr [message]');
+			setTimeout(() => {
+				reply('qr [message]');
+			}, 50);
+
 			return;
 		}
 
