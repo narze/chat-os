@@ -5,7 +5,8 @@ const config: PlaywrightTestConfig = {
 		command: 'export NODE_ENV=test; pnpm run build && pnpm run preview',
 		port: 4173
 	},
-	testDir: 'tests'
+	testDir: 'tests',
+	reporter: 'html'
 };
 
 export default config;
