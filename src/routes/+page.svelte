@@ -49,8 +49,6 @@
 	let messageInput: string = '';
 	let dbReady = false;
 
-	// TODO: Merge guest's messages when they sign in
-
 	$: guestMessages = liveQuery(async () => {
 		const chatLogs = await db.chatLogs.toArray();
 
