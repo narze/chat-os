@@ -73,4 +73,4 @@ jobs:
 
       # Vitest Tests (Unit)
       - name: Run Vitest tests
-        run: pnpm test
+        run: pnpm test:unit
