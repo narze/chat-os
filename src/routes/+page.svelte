@@ -61,7 +61,7 @@
 		messagesQuery = query(collection(firestore, `users/${sessionId}/messages`), orderBy('time'));
 		messages = collectionStore<Log>(firestore, messagesQuery);
 		messagesCollection = collectionStore<Log>(firestore, `users/${sessionId}/messages`);
-	} else if ($user !== undefined) {
+	} else if ($user === null) {
 		sessionId = (browser ? localStorage.getItem('sessionId') : '') || nanoid();
 
 		messagesQuery = query(collection(firestore, `guests/${sessionId}/messages`), orderBy('time'));
@@ -76,13 +76,23 @@
 	$: dbReady = messages !== undefined;
 
 	$: if (dbReady && $messages?.length === 0) {
-		messagesCollection.add({
-			self: false,
-			message: `Hello! I'm ChatOS! How can I help?`,
-			time: Timestamp.now(),
-			type: 'text',
-			sessionId
-		});
+		if ($user) {
+			messagesCollection.add({
+				self: false,
+				message: `Hello ${$user.displayName}!`,
+				time: Timestamp.now(),
+				type: 'text',
+				sessionId
+			});
+		} else {
+			messagesCollection.add({
+				self: false,
+				message: `Hello! I'm ChatOS! How can I help?`,
+				time: Timestamp.now(),
+				type: 'text',
+				sessionId
+			});
+		}
 	}
 
 	onDestroy(() => {
