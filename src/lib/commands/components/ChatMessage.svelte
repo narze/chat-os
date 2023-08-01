@@ -1,12 +1,7 @@
 <script context="module" lang="ts">
-	export interface Message {
-		alt?: string;
-		self?: boolean;
-		msg: string;
-		type?: string;
-		time: Date;
-		meta?: Record<string, string>;
-	}
+	import type { Log } from '~/src/routes/+page.svelte';
+
+	export interface Message extends Log {}
 </script>
 
 <script lang="ts">
@@ -16,6 +11,7 @@
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
+	export let guest: boolean = false;
 
 	const isComponent = message.type == 'component';
 	let showExpandButton = false;
@@ -79,9 +75,9 @@
 			</button>
 
 			{#if expanded}
-				{#if message.msg in components}
+				{#if message.message in components}
 					<svelte:component
-						this={components[message.msg]}
+						this={components[message.message]}
 						options={message.meta}
 						fullscreenMode={true}
 					/>
@@ -100,9 +96,9 @@
 	transition:fly|global={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 >
 	<div class="chat-header">
-		<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
+		<span class="font-medium">{!message.self ? 'ChatOS' : ''}{guest ? ' *' : ''}</span>
 		<time class="text-xs text-secondary"
-			>{message.time?.toLocaleString('en-US', {
+			>{message.time?.toDate().toLocaleString('en-US', {
 				weekday: 'short',
 				hour: 'numeric',
 				minute: 'numeric',
@@ -137,16 +133,16 @@
 		{/if}
 
 		{#if message.type == 'image'}
-			<img src={message.msg} alt={message.alt} />
+			<img src={message.message} alt={message.alt} />
 		{:else if message.type == 'link'}
-			<a href={message.msg} target="_blank" rel="noreferrer" class="link">{message.msg}</a>
+			<a href={message.message} target="_blank" rel="noreferrer" class="link">{message.message}</a>
 		{:else if message.type == 'component'}
-			{#if message.msg in components}
-				<!-- <Renderer component={components[message.msg]} props={{}} /> -->
-				<svelte:component this={components[message.msg]} options={message.meta} />
+			{#if message.message in components}
+				<!-- <Renderer component={components[message.message]} props={{}} /> -->
+				<svelte:component this={components[message.message]} options={message.meta} />
 			{/if}
 		{:else}
-			{#each message.msg.split('\n') as line}
+			{#each message.message.split('\n') as line}
 				<div>{line}</div>
 			{/each}
 		{/if}

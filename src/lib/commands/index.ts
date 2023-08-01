@@ -1,4 +1,5 @@
 import type { SvelteComponent } from 'svelte';
+
 import ChatMessageEvent from '../ChatMessageEvent';
 
 export const eventTarget = new EventTarget();

@@ -1,5 +1,6 @@
-import register, { deregister, type Command } from '.';
 import QRCode from 'qrcode';
+
+import register, { type Command, deregister } from '.';
 
 const command: Command = {
 	match: /^qr(\s+(\S+))?/i,
@@ -8,7 +9,10 @@ const command: Command = {
 
 		if (!args[1]) {
 			reply('Please enter text after "qr" to generate a QR code');
-			reply('qr [message]');
+			setTimeout(() => {
+				reply('qr [message]');
+			}, 50);
+
 			return;
 		}
 

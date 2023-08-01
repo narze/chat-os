@@ -1,4 +1,4 @@
-import register, { deregister, type Command, type Components } from '.';
+import register, { type Command, type Components, deregister } from '.';
 import Login from './components/Login.svelte';
 
 const command: Command = {

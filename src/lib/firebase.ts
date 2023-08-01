@@ -1,5 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
+import { type User, connectAuthEmulator, getAuth } from 'firebase/auth';
+import {
+	connectFirestoreEmulator,
+	initializeFirestore,
+	persistentLocalCache,
+	persistentMultipleTabManager
+} from 'firebase/firestore';
+
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -19,14 +27,14 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
-import { getAuth, connectAuthEmulator, type User } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 export const auth = getAuth(app);
-export const firestore = getFirestore(app);
+export const firestore = initializeFirestore(app, {
+	localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 // Connect to Firebase Emulator
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 	connectAuthEmulator(auth, 'http://localhost:9099');
 	connectFirestoreEmulator(firestore, 'localhost', 8080);
 }

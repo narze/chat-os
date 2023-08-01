@@ -1,4 +1,4 @@
-import register, { deregister, type Command, type Components } from '.';
+import register, { type Command, type Components, deregister } from '.';
 import Timer from './components/Timer.svelte';
 
 const command: Command = {
@@ -21,7 +21,7 @@ const command: Command = {
 		reply({
 			type: 'component',
 			message: 'timer',
-			options: { seconds, startAt: Date.now(), name: args.name }
+			options: { seconds, startAt: Date.now(), name: args.name || null }
 		});
 	}
 };

@@ -1,6 +1,16 @@
-import { writable } from 'svelte/store';
-import { auth } from './firebase';
 import type { User } from 'firebase/auth';
+import {
+	type CollectionReference,
+	type DocumentData,
+	type Firestore,
+	type Query,
+	addDoc,
+	collection,
+	onSnapshot
+} from 'firebase/firestore';
+import { writable } from 'svelte/store';
+
+import { auth } from './firebase';
 
 /**
  * The userStore is updated whenever the authentication state changes.
@@ -28,35 +38,12 @@ export function userStore() {
 	return { subscribe };
 }
 
-// Firestore
-
-import {
-	type Firestore,
-	type Query,
-	type CollectionReference,
-	collection,
-	onSnapshot,
-	addDoc,
-	type DocumentData
-} from 'firebase/firestore';
-
 export function collectionStore<T>(
 	firestore: Firestore,
 	ref: string | Query | CollectionReference,
-	startWith: T[] = []
+	startWith?: T[]
 ) {
 	let unsubscribe: () => void;
-
-	// Fallback for SSR
-	if (!firestore || !globalThis.window) {
-		console.warn('Firestore is not initialized or not in browser');
-		const { subscribe } = writable(startWith);
-		return {
-			subscribe,
-			ref: null,
-			add: null
-		};
-	}
 
 	const colRef =
 		typeof ref === 'string'
@@ -67,11 +54,23 @@ export function collectionStore<T>(
 		return addDoc(colRef, data as DocumentData);
 	}
 
-	const { subscribe } = writable(startWith, (set) => {
+	// Fallback for SSR
+	if (!firestore || !globalThis.window) {
+		console.warn('Firestore is not initialized or not in browser');
+		const { subscribe } = writable(startWith);
+		return {
+			subscribe,
+			ref: colRef,
+			add
+		};
+	}
+
+	const { subscribe } = writable<T[] | undefined>(startWith, (set) => {
 		unsubscribe = onSnapshot(colRef, (snapshot) => {
 			const data = snapshot.docs.map((s) => {
 				return { id: s.id, ref: s.ref, ...s.data() } as T;
 			});
+
 			set(data);
 		});
 

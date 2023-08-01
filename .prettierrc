@@ -3,6 +3,9 @@
 	"singleQuote": true,
 	"trailingComma": "none",
 	"printWidth": 100,
-	"plugins": ["prettier-plugin-svelte"],
-	"overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+	"plugins": ["prettier-plugin-svelte", "@trivago/prettier-plugin-sort-imports"],
+	"overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
+	"importOrder": ["^$app/(.*)$", "^$lib/(.*)$", "^[./]"],
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true
 }

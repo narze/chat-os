@@ -1,15 +1,33 @@
-<script lang="ts">
-	import { handleMessage } from '../lib/commands';
-	import unknownCommand from '../lib/commands/unknown';
-	import { onDestroy, onMount, tick } from 'svelte';
-	import { db } from '../lib/db';
-	import { liveQuery, type Observable } from 'dexie';
-	import type { Message } from '../lib/commands/components/ChatMessage.svelte';
-	import ChatMessage from '../lib/commands/components/ChatMessage.svelte';
-	import type { Components } from '../lib/commands';
-	// import Renderer from '../lib/commands/components/Renderer.svelte';
+<script lang="ts" context="module">
+	export interface Log {
+		id: string;
+		message: string;
+		self: boolean;
+		time: Timestamp;
+		type: string;
+		alt?: string;
+		meta?: Record<string, any>;
+		guestSession?: boolean;
+	}
+</script>
 
-	const commandsLoader = import.meta.glob('../lib/commands/*.ts', { eager: true }) as Record<
+<script lang="ts">
+	import { handleMessage } from '$lib/commands';
+	import unknownCommand from '$lib/commands/unknown';
+	import { onDestroy, tick } from 'svelte';
+	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
+	import type { Components, Message } from '$lib/commands';
+	import { firestore } from '$lib/firebase';
+	import { collectionStore } from '$lib/firebase-store';
+	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
+	import type { PageData } from './$types';
+	import { liveQuery, type Observable } from 'dexie';
+	import { db } from '$lib/db';
+
+	export let data: PageData;
+	let { user } = data;
+
+	const commandsLoader = import.meta.glob('$lib/commands/*.ts', { eager: true }) as Record<
 		string,
 		{ default: () => void; components?: Components }
 	>;
@@ -28,39 +46,79 @@
 		.reduce((a, b) => ({ ...a, ...b }), {})!;
 
 	let chatDiv: HTMLDivElement;
-
 	let messageInput: string = '';
 	let dbReady = false;
 
-	$: messages = liveQuery(async () => {
+	$: guestMessages = liveQuery(async () => {
 		const chatLogs = await db.chatLogs.toArray();
 
 		const messages = chatLogs.map((log) => ({
+			id: `${log.id}`,
 			self: !log.isBot,
-			msg: log.message,
-			time: log.time,
+			message: log.message,
+			time: Timestamp.fromDate(log.time),
 			type: log.type,
 			alt: log.alt,
-			meta: log.meta
-		}));
+			meta: log.meta,
+			guestSession: log.guestSession
+		})) satisfies Log[];
 
 		return messages;
-	}) satisfies Observable<Message[]>;
+	}) satisfies Observable<Log[]>;
 
-	onMount(async () => {
-		db.on('ready', () => {
-			dbReady = true;
-		});
+	let messagesQuery: ReturnType<typeof query<DocumentData, DocumentData>>;
+	let messages: ReturnType<typeof collectionStore<Log>>;
+	let messagesCollection: ReturnType<typeof collectionStore<Log>>;
 
-		if ((await db.chatLogs.count()) == 0) {
+	$: if ($user) {
+		messagesQuery = query(collection(firestore, `users/${$user.uid}/messages`), orderBy('time'));
+		messages = collectionStore<Log>(firestore, messagesQuery);
+		messagesCollection = collectionStore<Log>(firestore, `users/${$user.uid}/messages`);
+	}
+
+	$: combinedMessages = $user
+		? [...($messages || []), ...$guestMessages].sort(
+				(a, b) => a.time?.toDate().valueOf() - b.time?.toDate().valueOf()
+		  )
+		: $guestMessages;
+
+	$: dbReady =
+		$user !== undefined && ($user ? $messages !== undefined : $guestMessages !== undefined);
+
+	$: newLoggedInUser = $user && $messages !== undefined && $messages?.length === 0;
+	$: newGuestUser = $user == null && $guestMessages !== undefined && $guestMessages?.length === 0;
+
+	let greeted = false;
+	$: if (dbReady && (newLoggedInUser || newGuestUser) && !greeted) {
+		greeting();
+	}
+
+	$: if (dbReady && !newLoggedInUser && !newGuestUser) {
+		greeted = true;
+	}
+
+	function greeting() {
+		if (greeted) return;
+
+		greeted = true;
+
+		if ($user) {
+			messagesCollection.add({
+				self: false,
+				message: `Hello ${$user.displayName}!`,
+				time: Timestamp.now(),
+				type: 'text'
+			});
+		} else {
 			db.chatLogs.add({
+				guestSession: true,
 				isBot: true,
 				message: `Hello! I'm ChatOS! How can I help?`,
 				time: new Date(),
 				type: 'text'
 			});
 		}
-	});
+	}
 
 	onDestroy(() => {
 		commands.forEach((deregister) => deregister());
@@ -81,20 +139,17 @@
 
 	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
 
-	$: if (chatDiv && $messages?.length) {
+	$: if (chatDiv && ($messages?.length || $guestMessages?.length)) {
 		tick().then(() => {
-			if ($messages[$messages.length - 1]?.self) {
+			if (
+				$messages?.[$messages.length - 1]?.self ||
+				$guestMessages?.[$guestMessages.length - 1]?.self
+			) {
 				scrollToBottom(chatDiv, 'auto');
 			} else {
 				debouncedScrollToBottom(chatDiv, 'smooth');
 			}
 		});
-	}
-
-	$: if ($messages && $messages[$messages.length - 1]?.self) {
-		const lastMsg = $messages[$messages.length - 1].msg;
-
-		handleMessage(lastMsg, onBotReply, onBotCommand);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -109,31 +164,60 @@
 			return;
 		}
 
-		await db.chatLogs.add({
-			isBot: false,
-			message: messageInput,
-			time: new Date(),
-			type: 'text'
-		});
-
+		const message = messageInput;
 		messageInput = '';
+
+		handleMessage(message, onBotReply, onBotCommand);
+
+		// Add to Firestore or IndexedDB
+		if ($user) {
+			await messagesCollection.add({
+				self: true,
+				message,
+				time: Timestamp.now(),
+				type: 'text'
+			});
+		} else {
+			await db.chatLogs.add({
+				guestSession: true,
+				isBot: false,
+				message,
+				time: new Date(),
+				type: 'text'
+			});
+		}
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
 		setTimeout(async () => {
-			await db.chatLogs.add({
-				isBot: true,
-				message: msg,
-				time: new Date(),
-				type: type,
-				alt: options.alt,
-				meta: options
-			});
+			if ($user) {
+				const data = {
+					self: false,
+					message: msg,
+					time: Timestamp.now(),
+					type: type,
+					alt: options.alt || null,
+					meta: options
+				};
+
+				await messagesCollection.add(data);
+			} else {
+				await db.chatLogs.add({
+					guestSession: true,
+					isBot: true,
+					message: msg,
+					time: new Date(),
+					type: type,
+					alt: options.alt,
+					meta: options
+				});
+			}
 		}, 100);
 	}
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
+			// TODO: Hide messages instead of deleting them
 			db.on('ready', () => {
 				setTimeout(async () => {
 					await db.chatLogs.clear();
@@ -166,11 +250,9 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#if $messages}
-				{#each $messages as message (message.time)}
-					<ChatMessage {message} {components} />
-				{/each}
-			{/if}
+			{#each combinedMessages || [] as message (message.id)}
+				<ChatMessage {message} {components} guest={message.guestSession} />
+			{/each}
 		</div>
 
 		<div

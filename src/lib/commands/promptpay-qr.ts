@@ -1,6 +1,7 @@
-import register, { deregister, type Command } from '.';
-import QRCode from 'qrcode';
 import ppqr from 'promptpay-qr';
+import QRCode from 'qrcode';
+
+import register, { type Command, deregister } from '.';
 
 const command: Command = {
 	match: /^pp(\s+(\S+))?(\s+(\S+))?/i,
@@ -9,7 +10,9 @@ const command: Command = {
 
 		if (!args[1]) {
 			reply('Please enter PromptPay number after "pp" to generate a QR code, amount is optional');
-			reply('pp [promptpay no.] [amount]');
+			setTimeout(() => {
+				reply('pp [promptpay no.] [amount]');
+			}, 50);
 			return;
 		}
 

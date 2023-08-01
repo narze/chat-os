@@ -1,4 +1,4 @@
-import register, { deregister, type Command } from '.';
+import register, { type Command, deregister } from '.';
 import { db } from '../db';
 
 const command: Command = {

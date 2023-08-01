@@ -1,4 +1,4 @@
-import register, { deregister, type Command, type Components } from '.';
+import register, { type Command, type Components, deregister } from '.';
 import LargeType from './components/LargeType.svelte';
 
 const command: Command = {

@@ -1,5 +1,5 @@
-import type ChatMessageEvent from '../ChatMessageEvent';
 import { eventTarget } from '.';
+import type ChatMessageEvent from '../ChatMessageEvent';
 
 export default function () {
 	eventTarget.addEventListener('message', otherCommandsHandler as EventListener);

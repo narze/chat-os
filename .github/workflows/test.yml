@@ -38,6 +38,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Run Firebase Emulator
+        run: pnpm run dev:firebase &
+
+      - name: Wait for Firebase Emulator to be ready
+        run: pnpm run wait-for-firebase-emulator
+
       # Playwright Tests
       - name: Store Playwright's Version
         run: |
@@ -64,4 +73,4 @@ jobs:
 
       # Vitest Tests (Unit)
       - name: Run Vitest tests
-        run: pnpm test
+        run: pnpm test:unit
