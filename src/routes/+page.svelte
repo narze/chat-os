@@ -7,11 +7,11 @@
 		type: string;
 		alt?: string;
 		meta?: Record<string, any>;
+		guestSession?: boolean;
 	}
 </script>
 
 <script lang="ts">
-	import { nanoid } from 'nanoid';
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
@@ -61,7 +61,8 @@
 			time: Timestamp.fromDate(log.time),
 			type: log.type,
 			alt: log.alt,
-			meta: log.meta
+			meta: log.meta,
+			guestSession: log.guestSession
 		})) satisfies Log[];
 
 		return messages;
@@ -77,13 +78,32 @@
 		messagesCollection = collectionStore<Log>(firestore, `users/${$user.uid}/messages`);
 	}
 
+	$: combinedMessages = $user
+		? [...($messages || []), ...$guestMessages].sort(
+				(a, b) => a.time?.toDate().valueOf() - b.time?.toDate().valueOf()
+		  )
+		: $guestMessages;
+
 	$: dbReady =
 		$user !== undefined && ($user ? $messages !== undefined : $guestMessages !== undefined);
 
 	$: newLoggedInUser = $user && $messages !== undefined && $messages?.length === 0;
 	$: newGuestUser = $user == null && $guestMessages !== undefined && $guestMessages?.length === 0;
 
-	$: if (dbReady && (newLoggedInUser || newGuestUser)) {
+	let greeted = false;
+	$: if (dbReady && (newLoggedInUser || newGuestUser) && !greeted) {
+		greeting();
+	}
+
+	$: if (dbReady && !newLoggedInUser && !newGuestUser) {
+		greeted = true;
+	}
+
+	function greeting() {
+		if (greeted) return;
+
+		greeted = true;
+
 		if ($user) {
 			messagesCollection.add({
 				self: false,
@@ -93,6 +113,7 @@
 			});
 		} else {
 			db.chatLogs.add({
+				guestSession: true,
 				isBot: true,
 				message: `Hello! I'm ChatOS! How can I help?`,
 				time: new Date(),
@@ -160,6 +181,7 @@
 			});
 		} else {
 			await db.chatLogs.add({
+				guestSession: true,
 				isBot: false,
 				message,
 				time: new Date(),
@@ -183,6 +205,7 @@
 				await messagesCollection.add(data);
 			} else {
 				await db.chatLogs.add({
+					guestSession: true,
 					isBot: true,
 					message: msg,
 					time: new Date(),
@@ -229,16 +252,9 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#if $guestMessages}
-				{#each $guestMessages as message (message.id)}
-					<ChatMessage {message} {components} guest={true} />
-				{/each}
-			{/if}
-			{#if $user && $messages}
-				{#each $messages as message (message.id)}
-					<ChatMessage {message} {components} />
-				{/each}
-			{/if}
+			{#each combinedMessages || [] as message (message.id)}
+				<ChatMessage {message} {components} guest={message.guestSession} />
+			{/each}
 		</div>
 
 		<div

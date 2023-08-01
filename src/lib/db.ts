@@ -8,6 +8,7 @@ export interface ChatLog {
 	type: string;
 	alt?: string;
 	meta?: Record<string, string>;
+	guestSession?: boolean;
 }
 
 export class MyDexie extends Dexie {
@@ -15,8 +16,8 @@ export class MyDexie extends Dexie {
 
 	constructor() {
 		super('ChatOS');
-		this.version(3).stores({
-			chatLogs: '++id, isBot, message, time, type, alt, meta'
+		this.version(4).stores({
+			chatLogs: '++id, isBot, message, time, type, alt, meta, guestSession'
 		});
 	}
 }
