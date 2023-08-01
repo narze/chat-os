@@ -7,7 +7,6 @@
 		type: string;
 		alt?: string;
 		meta?: Record<string, any>;
-		sessionId: string;
 	}
 </script>
 
@@ -21,7 +20,6 @@
 	import { firestore } from '$lib/firebase';
 	import { collectionStore } from '$lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
-	import { browser } from '$app/environment';
 	import type { PageData } from './$types';
 	import { liveQuery, type Observable } from 'dexie';
 	import { db } from '$lib/db';
@@ -52,47 +50,53 @@
 	let dbReady = false;
 
 	// TODO: Merge guest's messages when they sign in
-	let sessionId: string;
+
+	$: guestMessages = liveQuery(async () => {
+		const chatLogs = await db.chatLogs.toArray();
+
+		const messages = chatLogs.map((log) => ({
+			id: `${log.id}`,
+			self: !log.isBot,
+			message: log.message,
+			time: Timestamp.fromDate(log.time),
+			type: log.type,
+			alt: log.alt,
+			meta: log.meta
+		})) satisfies Log[];
+
+		return messages;
+	}) satisfies Observable<Log[]>;
+
 	let messagesQuery: ReturnType<typeof query<DocumentData, DocumentData>>;
 	let messages: ReturnType<typeof collectionStore<Log>>;
 	let messagesCollection: ReturnType<typeof collectionStore<Log>>;
 
 	$: if ($user) {
-		sessionId = $user.uid;
-
-		messagesQuery = query(collection(firestore, `users/${sessionId}/messages`), orderBy('time'));
+		messagesQuery = query(collection(firestore, `users/${$user.uid}/messages`), orderBy('time'));
 		messages = collectionStore<Log>(firestore, messagesQuery);
-		messagesCollection = collectionStore<Log>(firestore, `users/${sessionId}/messages`);
-	} else if ($user === null) {
-		sessionId = (browser ? localStorage.getItem('sessionId') : '') || nanoid();
-
-		messagesQuery = query(collection(firestore, `guests/${sessionId}/messages`), orderBy('time'));
-		messages = collectionStore<Log>(firestore, messagesQuery);
-		messagesCollection = collectionStore<Log>(firestore, `guests/${sessionId}/messages`);
+		messagesCollection = collectionStore<Log>(firestore, `users/${$user.uid}/messages`);
 	}
 
-	$: if (browser && sessionId && $user !== undefined && $user === null) {
-		localStorage.setItem('sessionId', sessionId);
-	}
+	$: dbReady =
+		$user !== undefined && ($user ? $messages !== undefined : $guestMessages !== undefined);
 
-	$: dbReady = messages !== undefined;
+	$: newLoggedInUser = $user && $messages !== undefined && $messages?.length === 0;
+	$: newGuestUser = $user == null && $guestMessages !== undefined && $guestMessages?.length === 0;
 
-	$: if (dbReady && $messages?.length === 0) {
+	$: if (dbReady && (newLoggedInUser || newGuestUser)) {
 		if ($user) {
 			messagesCollection.add({
 				self: false,
 				message: `Hello ${$user.displayName}!`,
 				time: Timestamp.now(),
-				type: 'text',
-				sessionId
+				type: 'text'
 			});
 		} else {
-			messagesCollection.add({
-				self: false,
+			db.chatLogs.add({
+				isBot: true,
 				message: `Hello! I'm ChatOS! How can I help?`,
-				time: Timestamp.now(),
-				type: 'text',
-				sessionId
+				time: new Date(),
+				type: 'text'
 			});
 		}
 	}
@@ -116,9 +120,12 @@
 
 	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
 
-	$: if (chatDiv && $messages?.length) {
+	$: if (chatDiv && ($messages?.length || $guestMessages?.length)) {
 		tick().then(() => {
-			if ($messages?.[$messages.length - 1]?.self) {
+			if (
+				$messages?.[$messages.length - 1]?.self ||
+				$guestMessages?.[$guestMessages.length - 1]?.self
+			) {
 				scrollToBottom(chatDiv, 'auto');
 			} else {
 				debouncedScrollToBottom(chatDiv, 'smooth');
@@ -143,35 +150,58 @@
 
 		handleMessage(message, onBotReply, onBotCommand);
 
-		// Add to Firestore
-		await messagesCollection.add({
-			self: true,
-			message: message,
-			time: Timestamp.now(),
-			type: 'text',
-			sessionId
-		});
+		// Add to Firestore or IndexedDB
+		if ($user) {
+			await messagesCollection.add({
+				self: true,
+				message,
+				time: Timestamp.now(),
+				type: 'text'
+			});
+		} else {
+			await db.chatLogs.add({
+				isBot: false,
+				message,
+				time: new Date(),
+				type: 'text'
+			});
+		}
 	}
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
 		setTimeout(async () => {
-			const data = {
-				self: false,
-				message: msg,
-				time: Timestamp.now(),
-				type: type,
-				alt: options.alt || null,
-				meta: options,
-				sessionId
-			};
+			if ($user) {
+				const data = {
+					self: false,
+					message: msg,
+					time: Timestamp.now(),
+					type: type,
+					alt: options.alt || null,
+					meta: options
+				};
 
-			await messagesCollection.add(data);
+				await messagesCollection.add(data);
+			} else {
+				await db.chatLogs.add({
+					isBot: true,
+					message: msg,
+					time: new Date(),
+					type: type,
+					alt: options.alt,
+					meta: options
+				});
+			}
 		}, 100);
 	}
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
 			// TODO: Hide messages instead of deleting them
+			db.on('ready', () => {
+				setTimeout(async () => {
+					await db.chatLogs.clear();
+				}, 10);
+			});
 		}
 	}
 
@@ -199,7 +229,12 @@
 			bind:this={chatDiv}
 			class="flex flex-col gap-4 md:gap-6 mx-auto my-2 p-4 flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary"
 		>
-			{#if $messages}
+			{#if $guestMessages}
+				{#each $guestMessages as message (message.id)}
+					<ChatMessage {message} {components} guest={true} />
+				{/each}
+			{/if}
+			{#if $user && $messages}
 				{#each $messages as message (message.id)}
 					<ChatMessage {message} {components} />
 				{/each}

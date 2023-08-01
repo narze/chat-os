@@ -11,6 +11,7 @@
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
+	export let guest: boolean = false;
 
 	const isComponent = message.type == 'component';
 	let showExpandButton = false;
@@ -95,7 +96,7 @@
 	transition:fly|global={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 >
 	<div class="chat-header">
-		<span class="font-medium">{!message.self ? 'ChatOS' : ''}</span>
+		<span class="font-medium">{!message.self ? 'ChatOS' : ''}{guest ? ' *' : ''}</span>
 		<time class="text-xs text-secondary"
 			>{message.time?.toDate().toLocaleString('en-US', {
 				weekday: 'short',
