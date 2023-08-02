@@ -35,8 +35,11 @@ export const firestore = initializeFirestore(app, {
 
 // Connect to Firebase Emulator
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-	connectAuthEmulator(auth, 'http://localhost:9099');
-	connectFirestoreEmulator(firestore, 'localhost', 8080);
+	const firebaseEmulatorHost = import.meta.env.VITE_FIREBASE_EMULATOR_HOST || 'localhost';
+	console.log({ firebaseEmulatorHost });
+
+	connectAuthEmulator(auth, `http://${firebaseEmulatorHost}:9099`);
+	connectFirestoreEmulator(firestore, firebaseEmulatorHost, 8080);
 }
 
 // Function to get the user state
