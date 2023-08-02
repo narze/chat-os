@@ -27,7 +27,7 @@
 	let ended = endAt - Date.now() <= 0;
 	let msLeft: number;
 	let frame: number;
-	let notificationState: NotificationPermission = Notification.permission;
+	let notificationState: NotificationPermission = window.Notification?.permission || 'denied';
 	let worker: ServiceWorkerRegistration;
 	let timerWorker: Worker | undefined = undefined;
 
@@ -57,6 +57,15 @@
 	onDestroy(() => {
 		cancelAnimationFrame(frame);
 	});
+
+	function requestNotification() {
+		if (!('Notification' in window)) {
+			// Check if the browser supports notifications
+			alert('This browser does not support notification');
+		} else {
+			Notification.requestPermission().then((state) => (notificationState = state));
+		}
+	}
 
 	function format(seconds: number) {
 		const minutes = Math.floor(seconds / 60);
@@ -102,12 +111,10 @@
 	{/if}
 
 	{#if msLeft > 0}
-		{#if notificationState == 'default'}
-			<button
-				class="btn btn-outline btn-circle btn-sm mt-2"
-				on:click={() =>
-					Notification.requestPermission().then((state) => (notificationState = state))}
-			>
+		{#if !('Notification' in window)}
+			<!-- Notification not supported -->
+		{:else if notificationState == 'default'}
+			<button class="btn btn-outline btn-circle btn-sm mt-2" on:click={requestNotification}>
 				<AlertIcon />
 			</button>
 		{:else if notificationState == 'granted'}
