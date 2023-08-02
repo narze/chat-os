@@ -266,6 +266,7 @@
 				class="m-0 w-full resize-none border-0 bg-transparent p-0 pl-2 pr-7 dark:bg-transparent md:pl-0 focus:outline-none"
 				style="max-height: 200px; overflow-y: hidden;"
 				placeholder="Type your message..."
+				autocapitalize="off"
 			/>
 			<button
 				class="absolute p-1 rounded-md text-gray-500 bottom-1.5 right-1 md:bottom-2.5 md:right-2"
