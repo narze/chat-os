@@ -8,10 +8,14 @@
 		alt?: string;
 		meta?: Record<string, any>;
 		guestSession?: boolean;
+		encrypted?: boolean;
 	}
 </script>
 
 <script lang="ts">
+	import { secretbox, randomBytes } from 'tweetnacl';
+	import { decodeUTF8, encodeUTF8, encodeBase64, decodeBase64 } from 'tweetnacl-util';
+
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
@@ -171,12 +175,26 @@
 
 		// Add to Firestore or IndexedDB
 		if ($user) {
-			await messagesCollection.add({
-				self: true,
-				message,
-				time: Timestamp.now(),
-				type: 'text'
-			});
+			const encryptionKey = localStorage.getItem('chat-os-encryption-key');
+
+			if (encryptionKey) {
+				const encryptedMessage = encryptMessage(message, encryptionKey);
+
+				await messagesCollection.add({
+					self: true,
+					message: encryptedMessage,
+					time: Timestamp.now(),
+					type: 'text',
+					encrypted: true
+				});
+			} else {
+				await messagesCollection.add({
+					self: true,
+					message,
+					time: Timestamp.now(),
+					type: 'text'
+				});
+			}
 		} else {
 			await db.chatLogs.add({
 				guestSession: true,
@@ -187,6 +205,20 @@
 			});
 		}
 	}
+
+	const encryptMessage = (json: string, key: string) => {
+		const keyUint8Array = decodeBase64(key);
+		const nonce = randomBytes(secretbox.nonceLength);
+		const messageUint8 = decodeUTF8(JSON.stringify(json));
+		const box = secretbox(messageUint8, nonce, keyUint8Array);
+
+		const fullMessage = new Uint8Array(nonce.length + box.length);
+		fullMessage.set(nonce);
+		fullMessage.set(box, nonce.length);
+
+		const base64FullMessage = encodeBase64(fullMessage);
+		return base64FullMessage;
+	};
 
 	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
 		setTimeout(async () => {

@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+	import { secretbox } from 'tweetnacl';
 	import type { Log } from '~/src/routes/+page.svelte';
 
 	export interface Message extends Log {}
@@ -8,6 +9,7 @@
 	import type { SvelteComponent } from 'svelte';
 
 	import { fly } from 'svelte/transition';
+	import { decodeBase64, encodeUTF8 } from 'tweetnacl-util';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
@@ -42,6 +44,47 @@
 			expandedDialog.close();
 		}
 	}
+
+	function getMessage() {
+		if (message.encrypted) {
+			// Tries to decrypt the message, if failed, return error message
+			const key = localStorage.getItem('chat-os-encryption-key');
+
+			if (!key) {
+				return '[no encryption key set]';
+			}
+
+			try {
+				const decrypted = decryptMessage(message.message, key);
+
+				return decrypted;
+			} catch (e) {
+				console.info(e);
+				return '[decryption failed]';
+			}
+		} else {
+			return message.message;
+		}
+	}
+
+	const decryptMessage = (messageWithNonce: string, key: string) => {
+		const keyUint8Array = decodeBase64(key);
+		const messageWithNonceAsUint8Array = decodeBase64(messageWithNonce);
+		const nonce = messageWithNonceAsUint8Array.slice(0, secretbox.nonceLength);
+		const message = messageWithNonceAsUint8Array.slice(
+			secretbox.nonceLength,
+			messageWithNonce.length
+		);
+
+		const decrypted = secretbox.open(message, nonce, keyUint8Array);
+
+		if (!decrypted) {
+			throw new Error('Could not decrypt message');
+		}
+
+		const base64DecryptedMessage = encodeUTF8(decrypted);
+		return JSON.parse(base64DecryptedMessage);
+	};
 
 	$: if (expanded) {
 		if (isComponent) {
@@ -134,16 +177,16 @@
 		{/if}
 
 		{#if message.type == 'image'}
-			<img src={message.message} alt={message.alt} />
+			<img src={getMessage()} alt={message.alt} />
 		{:else if message.type == 'link'}
-			<a href={message.message} target="_blank" rel="noreferrer" class="link">{message.message}</a>
+			<a href={getMessage()} target="_blank" rel="noreferrer" class="link">{getMessage()}</a>
 		{:else if message.type == 'component'}
-			{#if message.message in components}
-				<!-- <Renderer component={components[message.message]} props={{}} /> -->
-				<svelte:component this={components[message.message]} options={message.meta} />
+			{#if getMessage() in components}
+				<!-- <Renderer component={components[getMessage()]} props={{}} /> -->
+				<svelte:component this={components[getMessage()]} options={message.meta} />
 			{/if}
 		{:else}
-			{#each message.message.split('\n') as line}
+			{#each getMessage().split('\n') as line}
 				<div>{line}</div>
 			{/each}
 		{/if}

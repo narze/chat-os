@@ -64,6 +64,10 @@
 
 		if (key) {
 			localStorage.setItem('chat-os-encryption-key', key);
+		} else {
+			if (confirm('Are you sure you want to remove the encryption key?')) {
+				localStorage.removeItem('chat-os-encryption-key');
+			}
 		}
 	}
 
