@@ -97,6 +97,12 @@ devDependencies:
   tslib:
     specifier: ^2.6.0
     version: 2.6.0
+  tweetnacl:
+    specifier: ^1.0.3
+    version: 1.0.3
+  tweetnacl-util:
+    specifier: ^0.15.1
+    version: 0.15.1
   typescript:
     specifier: ^5.1.6
     version: 5.1.6
@@ -7756,6 +7762,14 @@ packages:
 
   /tslib@2.6.0:
     resolution: {integrity: sha512-7At1WUettjcSRHXCyYtTselblcHl9PJFFVKiCAy/bY97+BPZXSQ2wbq0P9s8tK2G7dFQfNnlJnPAiArVBVBsfA==}
+    dev: true
+
+  /tweetnacl-util@0.15.1:
+    resolution: {integrity: sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==}
+    dev: true
+
+  /tweetnacl@1.0.3:
+    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
     dev: true
 
   /type-check@0.4.0:
