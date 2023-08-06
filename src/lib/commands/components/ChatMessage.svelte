@@ -107,6 +107,7 @@
 			})}</time
 		>
 	</div>
+	<!-- FIXME: mouseenter event does prevent clicking buttons inside the component on mobile (user have to click twice) -->
 	<div
 		class="chat-bubble chat-bubble-primary relative"
 		role="log"

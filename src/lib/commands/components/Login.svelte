@@ -58,6 +58,24 @@
 			});
 		}
 	}
+
+	function setEncryptionKey() {
+		const key = prompt('Enter encryption key (this will be stored in your browser only)');
+
+		if (key) {
+			localStorage.setItem('chat-os-encryption-key', key);
+		}
+	}
+
+	function showEncryptionKey() {
+		const key = localStorage.getItem('chat-os-encryption-key');
+
+		if (key) {
+			alert(key);
+		} else {
+			alert('Error: No encryption key set');
+		}
+	}
 </script>
 
 {#if $user === undefined}
@@ -65,6 +83,8 @@
 {:else if $user}
 	<p>Logged in as {$user.displayName}</p>
 	<button class="btn btn-sm btn-secondary" on:click={syncChat}>Sync chat</button>
+	<button class="btn btn-sm btn-secondary" on:click={setEncryptionKey}>Set encryption key</button>
+	<button class="btn btn-sm btn-secondary" on:click={showEncryptionKey}>Show encryption key</button>
 	<button class="btn btn-sm btn-default" on:click={signOut}>Sign out</button>
 {:else}
 	<p>Not logged in</p>
