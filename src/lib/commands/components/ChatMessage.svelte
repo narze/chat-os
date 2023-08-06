@@ -138,7 +138,7 @@
 	class:chat-self={message.self}
 	transition:fly|global={message.self ? { duration: 0 } : { y: 50, duration: 100 }}
 >
-	<div class="chat-header">
+	<div class="chat-header flex items-center gap-1">
 		<span class="font-medium">{!message.self ? 'ChatOS' : ''}{guest ? ' *' : ''}</span>
 		<time class="text-xs text-secondary"
 			>{message.time?.toDate().toLocaleString('en-US', {
@@ -149,6 +149,23 @@
 				hour12: true
 			})}</time
 		>
+
+		{#if message.encrypted}
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="w-3 h-3 inline-block"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+				/>
+			</svg>
+		{/if}
 	</div>
 	<!-- FIXME: mouseenter event does prevent clicking buttons inside the component on mobile (user have to click twice) -->
 	<div
