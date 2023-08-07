@@ -22,6 +22,8 @@
 	async function signOut() {
 		await auth.signOut();
 
+		localStorage.removeItem('chat-os-encryption-key');
+
 		// FIXME: Sync user's data without reloading the page
 		location.reload();
 	}
