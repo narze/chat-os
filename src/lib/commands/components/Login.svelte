@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { pbkdf2Async } from '@noble/hashes/pbkdf2';
+	import { sha256 } from '@noble/hashes/sha256';
+	import { encodeBase64 } from 'tweetnacl-util';
 	import { auth, firestore } from '$lib/firebase';
 	import { collectionStore, userStore } from '$lib/firebase-store';
 	import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -59,11 +62,31 @@
 		}
 	}
 
-	function setEncryptionKey() {
-		const key = prompt('Enter encryption key (this will be stored in your browser only)');
+	async function setPassphrase() {
+		const passphrase = prompt(
+			'Enter passphrase\n(This will be encrypted and stored in this browser, please do not forget it.)'
+		);
 
-		if (key) {
+		if (passphrase) {
+			const passphraseConfirmation = prompt('Enter passphrase again to confirm.');
+
+			if (passphrase !== passphraseConfirmation) {
+				alert('Passphrases do not match, please try again');
+				return;
+			}
+
+			const start = performance.now();
+			const key = encodeBase64(
+				await pbkdf2Async(sha256, passphrase, $user?.uid || 'chatos-salt', { c: 300000, dkLen: 32 })
+			);
+			const end = performance.now();
+
+			console.log(`PBKDF2 encryption took ${end - start} milliseconds.`);
+			// console.log({ key, passphrase });
+
 			localStorage.setItem('chat-os-encryption-key', key);
+
+			alert('Passphrase set successfully. Your chat messages from now on are encrypted 🔐');
 		} else {
 			if (confirm('Are you sure you want to remove the encryption key?')) {
 				localStorage.removeItem('chat-os-encryption-key');
@@ -87,7 +110,7 @@
 {:else if $user}
 	<p>Logged in as {$user.displayName}</p>
 	<button class="btn btn-sm btn-secondary" on:click={syncChat}>Sync chat</button>
-	<button class="btn btn-sm btn-secondary" on:click={setEncryptionKey}>Set encryption key</button>
+	<button class="btn btn-sm btn-secondary" on:click={setPassphrase}>Set passphrase</button>
 	<button class="btn btn-sm btn-secondary" on:click={showEncryptionKey}>Show encryption key</button>
 	<button class="btn btn-sm btn-default" on:click={signOut}>Sign out</button>
 {:else}
