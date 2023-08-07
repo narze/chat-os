@@ -65,6 +65,11 @@
 	}
 
 	async function setPassphrase() {
+		if (!$user?.uid) {
+			alert('Error: User not logged in');
+			return;
+		}
+
 		const passphrase = prompt(
 			'Enter passphrase\n(This will be encrypted and stored in this browser, please do not forget it.)'
 		);
@@ -79,12 +84,11 @@
 
 			const start = performance.now();
 			const key = encodeBase64(
-				await pbkdf2Async(sha256, passphrase, $user?.uid || 'chatos-salt', { c: 300000, dkLen: 32 })
+				await pbkdf2Async(sha256, passphrase, $user.uid, { c: 300000, dkLen: 32 })
 			);
 			const end = performance.now();
 
 			console.log(`PBKDF2 encryption took ${end - start} milliseconds.`);
-			// console.log({ key, passphrase });
 
 			localStorage.setItem('chat-os-encryption-key', key);
 
