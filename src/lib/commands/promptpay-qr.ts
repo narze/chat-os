@@ -27,7 +27,8 @@ const command: Command = {
 			message: await QRCode.toDataURL(ppqr(args[1], { amount: args[3] ? +args[3] : undefined }), {
 				scale: 6
 			}),
-			options: { alt }
+			options: { alt },
+			encrypted: true
 		});
 	}
 };

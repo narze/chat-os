@@ -21,6 +21,7 @@ const command: Command = {
 		reply({
 			type: 'component',
 			message: 'timer',
+			encrypted: true,
 			options: { seconds, startAt: Date.now(), name: args.name || null }
 		});
 	}

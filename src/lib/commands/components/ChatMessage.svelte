@@ -67,6 +67,28 @@
 		}
 	}
 
+	function getMeta() {
+		if (message.encrypted) {
+			// Tries to decrypt the message, if failed, return error message
+			const key = localStorage.getItem('chat-os-encryption-key');
+
+			if (!key) {
+				return '[no encryption key set]';
+			}
+
+			try {
+				const decrypted = decryptMessage(message.meta as string, key);
+
+				return decrypted;
+			} catch (e) {
+				console.info(e);
+				return '[decryption failed]';
+			}
+		} else {
+			return message.meta;
+		}
+	}
+
 	const decryptMessage = (messageWithNonce: string, key: string) => {
 		const keyUint8Array = decodeBase64(key);
 		const messageWithNonceAsUint8Array = decodeBase64(messageWithNonce);
@@ -194,13 +216,13 @@
 		{/if}
 
 		{#if message.type == 'image'}
-			<img src={getMessage()} alt={message.alt} />
+			<img src={getMessage()} alt={getMeta().alt} />
 		{:else if message.type == 'link'}
 			<a href={getMessage()} target="_blank" rel="noreferrer" class="link">{getMessage()}</a>
 		{:else if message.type == 'component'}
 			{#if getMessage() in components}
 				<!-- <Renderer component={components[getMessage()]} props={{}} /> -->
-				<svelte:component this={components[getMessage()]} options={message.meta} />
+				<svelte:component this={components[getMessage()]} options={getMeta()} />
 			{/if}
 		{:else}
 			{#each getMessage().split('\n') as line}

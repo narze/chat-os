@@ -1,12 +1,13 @@
 <script lang="ts" context="module">
+	type EncryptedMeta = string;
+
 	export interface Log {
 		id: string;
 		message: string;
 		self: boolean;
 		time: Timestamp;
 		type: string;
-		alt?: string;
-		meta?: Record<string, any>;
+		meta?: Record<string, any> | EncryptedMeta;
 		guestSession?: boolean;
 		encrypted?: boolean;
 	}
@@ -62,7 +63,6 @@
 			message: log.message,
 			time: Timestamp.fromDate(log.time),
 			type: log.type,
-			alt: log.alt,
 			meta: log.meta,
 			guestSession: log.guestSession
 		})) satisfies Log[];
@@ -206,7 +206,7 @@
 		}
 	}
 
-	const encryptMessage = (json: string, key: string) => {
+	const encryptMessage = (json: string | Record<string, any>, key: string) => {
 		const keyUint8Array = decodeBase64(key);
 		const nonce = randomBytes(secretbox.nonceLength);
 		const messageUint8 = decodeUTF8(JSON.stringify(json));
@@ -225,21 +225,20 @@
 		const options = payload?.options || {};
 		const encrypted = payload?.encrypted || false;
 
-		console.log({ payload });
-
 		setTimeout(async () => {
 			if ($user) {
 				const encryptionKey = localStorage.getItem('chat-os-encryption-key');
 
 				if (encrypted && encryptionKey) {
 					const encryptedMessage = encryptMessage(message, encryptionKey);
+					const encryptedOptions = encryptMessage(options, encryptionKey);
 
 					await messagesCollection.add({
 						self: false,
 						message: encryptedMessage,
 						time: Timestamp.now(),
 						type,
-						alt: options.alt || null,
+						meta: encryptedOptions as unknown as Record<string, any>,
 						encrypted: true
 					});
 				} else {
@@ -247,7 +246,7 @@
 						self: false,
 						message,
 						time: Timestamp.now(),
-						alt: options.alt || null,
+						meta: options,
 						type
 					});
 				}
@@ -258,7 +257,6 @@
 					message,
 					time: new Date(),
 					type: type,
-					alt: options.alt,
 					meta: options
 				});
 			}
