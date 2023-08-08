@@ -220,7 +220,7 @@
 		return base64FullMessage;
 	};
 
-	const onBotReply: BotMessageCallback = (msg, payload) => {
+	const onBotReply: BotMessageCallback = (message, payload) => {
 		const type = payload?.type || 'text';
 		const options = payload?.options || {};
 		const encrypted = payload?.encrypted || false;
@@ -229,21 +229,33 @@
 
 		setTimeout(async () => {
 			if ($user) {
-				const data = {
-					self: false,
-					message: msg,
-					time: Timestamp.now(),
-					type: type,
-					alt: options.alt || null,
-					meta: options
-				};
+				const encryptionKey = localStorage.getItem('chat-os-encryption-key');
 
-				await messagesCollection.add(data);
+				if (encrypted && encryptionKey) {
+					const encryptedMessage = encryptMessage(message, encryptionKey);
+
+					await messagesCollection.add({
+						self: false,
+						message: encryptedMessage,
+						time: Timestamp.now(),
+						type,
+						alt: options.alt || null,
+						encrypted: true
+					});
+				} else {
+					await messagesCollection.add({
+						self: false,
+						message,
+						time: Timestamp.now(),
+						alt: options.alt || null,
+						type
+					});
+				}
 			} else {
 				await db.chatLogs.add({
 					guestSession: true,
 					isBot: true,
-					message: msg,
+					message,
 					time: new Date(),
 					type: type,
 					alt: options.alt,
