@@ -16,6 +16,7 @@ export interface MessageObject {
 	message: string;
 	type: string;
 	options?: Record<string, any>;
+	encrypted?: boolean;
 }
 
 export type Action = ({
@@ -41,7 +42,8 @@ export default function register(command: Command) {
 				if (typeof message === 'string') {
 					botMessageCallback(message);
 				} else {
-					botMessageCallback(message.message, message.type, message.options);
+					const { message: messageStr, ...payload } = message;
+					botMessageCallback(messageStr, payload);
 				}
 			};
 
@@ -58,10 +60,17 @@ export function deregister(command: Command) {
 	eventTarget.removeEventListener('message', handlers[command.match.toString()] as EventListener);
 }
 
+export type BotMessageCallback = (
+	botMsg: string,
+	payload?: { type: string; options?: Record<string, any>; encrypted?: boolean }
+) => void;
+
+export type BotCommandCallback = (command: string) => void;
+
 export function handleMessage(
 	message: string,
-	botMessageCallback: (botMsg: string, type?: string, options?: Record<string, any>) => void,
-	botCommandCallback: (command: string) => void
+	botMessageCallback: BotMessageCallback,
+	botCommandCallback: BotCommandCallback
 ) {
 	eventTarget.dispatchEvent(
 		new ChatMessageEvent('message', { message, botMessageCallback, botCommandCallback })

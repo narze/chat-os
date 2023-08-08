@@ -1,4 +1,4 @@
-import type { SvelteComponent } from 'svelte';
+import type { BotCommandCallback, BotMessageCallback } from './commands';
 
 export default class ChatMessageEvent extends Event {
 	public data;
@@ -7,8 +7,8 @@ export default class ChatMessageEvent extends Event {
 		eventName: string,
 		eventData: {
 			message: string;
-			botMessageCallback: (message: string, type?: string, options?: Record<string, any>) => void;
-			botCommandCallback: (command: string) => void;
+			botMessageCallback: BotMessageCallback;
+			botCommandCallback: BotCommandCallback;
 		}
 	) {
 		super(eventName);

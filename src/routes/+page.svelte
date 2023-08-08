@@ -20,7 +20,7 @@
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
 	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
-	import type { Components, Message } from '$lib/commands';
+	import type { BotMessageCallback, Components, Message } from '$lib/commands';
 	import { firestore } from '$lib/firebase';
 	import { collectionStore } from '$lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
@@ -220,7 +220,13 @@
 		return base64FullMessage;
 	};
 
-	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
+	const onBotReply: BotMessageCallback = (msg, payload) => {
+		const type = payload?.type || 'text';
+		const options = payload?.options || {};
+		const encrypted = payload?.encrypted || false;
+
+		console.log({ payload });
+
 		setTimeout(async () => {
 			if ($user) {
 				const data = {
@@ -245,7 +251,7 @@
 				});
 			}
 		}, 100);
-	}
+	};
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {
