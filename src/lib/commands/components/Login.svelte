@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { pbkdf2Async } from '@noble/hashes/pbkdf2';
 	import { sha256 } from '@noble/hashes/sha256';
-	import { encodeBase64 } from 'tweetnacl-util';
+	import { encodeBase64 } from '$lib/encryption';
 	import { auth, firestore } from '$lib/firebase';
 	import { collectionStore, userStore } from '$lib/firebase-store';
 	import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';

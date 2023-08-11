@@ -14,14 +14,13 @@
 </script>
 
 <script lang="ts">
-	import { secretbox, randomBytes } from 'tweetnacl';
-	import { decodeUTF8, encodeUTF8, encodeBase64, decodeBase64 } from 'tweetnacl-util';
+	import { secretbox, randomBytes, decodeUTF8, encodeBase64, decodeBase64 } from '$lib/encryption';
 
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
 	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
-	import type { BotMessageCallback, Components, Message } from '$lib/commands';
+	import type { BotMessageCallback, Components } from '$lib/commands';
 	import { firestore } from '$lib/firebase';
 	import { collectionStore } from '$lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';

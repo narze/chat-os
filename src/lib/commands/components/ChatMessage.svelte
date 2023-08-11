@@ -1,5 +1,4 @@
 <script context="module" lang="ts">
-	import { secretbox } from 'tweetnacl';
 	import type { Log } from '~/src/routes/+page.svelte';
 
 	export interface Message extends Log {}
@@ -9,7 +8,7 @@
 	import type { SvelteComponent } from 'svelte';
 
 	import { fly } from 'svelte/transition';
-	import { decodeBase64, encodeUTF8 } from 'tweetnacl-util';
+	import { decodeBase64, encodeUTF8, secretbox } from '$lib/encryption';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
