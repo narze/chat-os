@@ -13,10 +13,14 @@
 	const user = userStore();
 
 	async function signIn() {
-		const user = await signInWithPopup(auth, provider);
+		const result = await signInWithPopup(auth, provider);
 
-		// FIXME: Sync user's data without reloading the page
-		location.reload();
+		if (result.user) {
+			localStorage.removeItem('chat-os-encryption-key');
+
+			// FIXME: Sync user's data without reloading the page
+			location.reload();
+		}
 	}
 
 	async function signOut() {
