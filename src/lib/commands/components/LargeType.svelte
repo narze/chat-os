@@ -2,7 +2,7 @@
 	import fitty from 'fitty/dist/fitty.min.js';
 
 	export let options: Record<string, string> = {};
-	export let fullscreenMode: boolean;
+	export let fullscreenMode: boolean = false;
 
 	const text = options.text || '';
 

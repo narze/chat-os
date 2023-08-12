@@ -16,6 +16,7 @@
 
 	const isComponent = message.type == 'component';
 	let fullscreenDialog: HTMLDialogElement;
+	let fullscreenDialogShown: boolean;
 
 	function getMessage() {
 		if (message.encrypted) {
@@ -79,6 +80,12 @@
 		const base64DecryptedMessage = encodeUTF8(decrypted);
 		return JSON.parse(base64DecryptedMessage);
 	};
+
+	$: if (fullscreenDialogShown) {
+		fullscreenDialog.addEventListener('close', () => {
+			fullscreenDialogShown = false;
+		});
+	}
 </script>
 
 {#if isComponent}
@@ -102,8 +109,14 @@
 				</svg>
 			</button>
 
-			{#if getMessage() in components}
-				<svelte:component this={components[getMessage()]} options={getMeta()} />
+			{#if fullscreenDialogShown}
+				{#if getMessage() in components}
+					<svelte:component
+						this={components[getMessage()]}
+						options={getMeta()}
+						fullscreenMode={true}
+					/>
+				{/if}
 			{/if}
 		</div>
 	</dialog>
@@ -151,7 +164,10 @@
 		{#if isComponent}
 			<button
 				class="hidden group-hover:block absolute top-2 right-2 btn btn-xs btn-primary btn-square"
-				on:click={() => fullscreenDialog.showModal()}
+				on:click={() => {
+					fullscreenDialog.showModal();
+					fullscreenDialogShown = true;
+				}}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
