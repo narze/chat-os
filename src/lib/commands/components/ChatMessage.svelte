@@ -15,34 +15,7 @@
 	export let guest: boolean = false;
 
 	const isComponent = message.type == 'component';
-	let showExpandButton = false;
-	let expanded = false;
-	let expandedDialog: HTMLDialogElement;
-
-	function mouseenter() {
-		if (isComponent) {
-			showExpandButton = true;
-		}
-	}
-
-	function mouseleave() {
-		if (isComponent) {
-			showExpandButton = false;
-		}
-	}
-
-	function expand() {
-		if (isComponent) {
-			expanded = true;
-		}
-	}
-
-	function unexpand() {
-		if (isComponent) {
-			expanded = false;
-			expandedDialog.close();
-		}
-	}
+	let fullscreenDialog: HTMLDialogElement;
 
 	function getMessage() {
 		if (message.encrypted) {
@@ -106,26 +79,17 @@
 		const base64DecryptedMessage = encodeUTF8(decrypted);
 		return JSON.parse(base64DecryptedMessage);
 	};
-
-	$: if (expanded) {
-		if (isComponent) {
-			expandedDialog.showModal();
-		}
-	}
-
-	$: if (expandedDialog) {
-		expandedDialog.addEventListener('close', () => {
-			unexpand();
-		});
-	}
 </script>
 
 {#if isComponent}
-	<dialog bind:this={expandedDialog} class="p-0 overflow-hidden">
+	<dialog bind:this={fullscreenDialog} class="p-0 overflow-hidden">
 		<div
 			class="bg-primary w-[90vw] h-[90svh] relative rounded flex items-center justify-center overflow-hidden"
 		>
-			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square" on:click={unexpand}>
+			<button
+				class="absolute top-2 right-2 btn btn-xs btn-primary btn-square"
+				on:click={() => fullscreenDialog.close()}
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
@@ -138,14 +102,8 @@
 				</svg>
 			</button>
 
-			{#if expanded}
-				{#if message.message in components}
-					<svelte:component
-						this={components[message.message]}
-						options={message.meta}
-						fullscreenMode={true}
-					/>
-				{/if}
+			{#if getMessage() in components}
+				<svelte:component this={components[getMessage()]} options={getMeta()} />
 			{/if}
 		</div>
 	</dialog>
@@ -188,15 +146,13 @@
 			</svg>
 		{/if}
 	</div>
-	<!-- FIXME: mouseenter event does prevent clicking buttons inside the component on mobile (user have to click twice) -->
-	<div
-		class="chat-bubble chat-bubble-primary relative"
-		role="log"
-		on:mouseenter={mouseenter}
-		on:mouseleave={mouseleave}
-	>
-		{#if showExpandButton}
-			<button class="absolute top-2 right-2 btn btn-xs btn-primary btn-square" on:click={expand}>
+
+	<div class="chat-bubble chat-bubble-primary relative group" role="log">
+		{#if isComponent}
+			<button
+				class="hidden group-hover:block absolute top-2 right-2 btn btn-xs btn-primary btn-square"
+				on:click={() => fullscreenDialog.showModal()}
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
