@@ -20,7 +20,7 @@ import { auth } from './firebase';
 export function userStore() {
 	// Handle SSR by returning $user as undefined, then check in the component as loading state
 	if (!auth || !globalThis.window) {
-		console.warn('Auth is not initialized or not in browser');
+		// console.warn('Auth is not initialized or not in browser');
 		const { subscribe } = writable<undefined>(undefined);
 		return {
 			subscribe

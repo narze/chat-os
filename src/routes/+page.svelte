@@ -14,7 +14,14 @@
 </script>
 
 <script lang="ts">
-	import { secretbox, randomBytes, decodeUTF8, encodeBase64, decodeBase64 } from '$lib/encryption';
+	import {
+		secretbox,
+		randomBytes,
+		decodeUTF8,
+		encodeBase64,
+		decodeBase64,
+		encryptMessage
+	} from '$lib/encryption';
 
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
@@ -204,20 +211,6 @@
 			});
 		}
 	}
-
-	const encryptMessage = (json: string | Record<string, any>, key: string) => {
-		const keyUint8Array = decodeBase64(key);
-		const nonce = randomBytes(secretbox.nonceLength);
-		const messageUint8 = decodeUTF8(JSON.stringify(json));
-		const box = secretbox(messageUint8, nonce, keyUint8Array);
-
-		const fullMessage = new Uint8Array(nonce.length + box.length);
-		fullMessage.set(nonce);
-		fullMessage.set(box, nonce.length);
-
-		const base64FullMessage = encodeBase64(fullMessage);
-		return base64FullMessage;
-	};
 
 	const onBotReply: BotMessageCallback = (message, payload) => {
 		const type = payload?.type || 'text';

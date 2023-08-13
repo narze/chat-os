@@ -8,7 +8,7 @@
 	import type { SvelteComponent } from 'svelte';
 
 	import { fly } from 'svelte/transition';
-	import { decodeBase64, encodeUTF8, secretbox } from '$lib/encryption';
+	import { decodeBase64, decryptMessage, encodeUTF8, secretbox } from '$lib/encryption';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
@@ -61,25 +61,6 @@
 			return message.meta;
 		}
 	}
-
-	const decryptMessage = (messageWithNonce: string, key: string) => {
-		const keyUint8Array = decodeBase64(key);
-		const messageWithNonceAsUint8Array = decodeBase64(messageWithNonce);
-		const nonce = messageWithNonceAsUint8Array.slice(0, secretbox.nonceLength);
-		const message = messageWithNonceAsUint8Array.slice(
-			secretbox.nonceLength,
-			messageWithNonce.length
-		);
-
-		const decrypted = secretbox.open(message, nonce, keyUint8Array);
-
-		if (!decrypted) {
-			throw new Error('Could not decrypt message');
-		}
-
-		const base64DecryptedMessage = encodeUTF8(decrypted);
-		return JSON.parse(base64DecryptedMessage);
-	};
 
 	$: if (fullscreenDialogShown) {
 		fullscreenDialog.addEventListener('close', () => {
