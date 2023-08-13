@@ -17,7 +17,7 @@
 	import { dev } from '$app/environment';
 
 	export let options: Record<string, string> = {};
-	export let fullscreenMode: boolean;
+	export let fullscreenMode: boolean = false;
 
 	const timerSeconds = +options.seconds || 60;
 	const startAt = +options.startAt;

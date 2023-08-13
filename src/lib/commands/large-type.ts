@@ -16,6 +16,7 @@ const command: Command = {
 
 		reply({
 			type: 'component',
+			encrypted: true,
 			message: 'largetype',
 			options: { text }
 		});

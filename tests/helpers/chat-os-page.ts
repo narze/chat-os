@@ -66,4 +66,23 @@ export default class ChatOSPage {
 		const timestampRegex = /\d{1,2}:\d{1,2} (AM|PM)/;
 		await expect(this.page.getByText(timestampRegex)).toBeVisible();
 	}
+
+	async login() {
+		await this.input('login');
+
+		await this.waitForResponse();
+		await this.expectLastMessage(/Sign in/i, true);
+
+		const signinPopupPromise = this.page.waitForEvent('popup');
+		await this.page.click('text=Sign in with Google');
+
+		const signinPopup = await signinPopupPromise;
+		await signinPopup.waitForLoadState();
+
+		await signinPopup.getByRole('button', { name: 'Add new account' }).click();
+		await signinPopup.getByRole('button', { name: 'Auto-generate user information' }).click();
+		await signinPopup.getByRole('button', { name: 'Sign in with Google.com' }).click();
+
+		await this.expectLastMessage(/Hello/i, true);
+	}
 }

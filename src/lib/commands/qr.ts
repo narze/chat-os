@@ -21,7 +21,8 @@ const command: Command = {
 		reply({
 			type: 'image',
 			message: await QRCode.toDataURL(args[1], { scale: 6 }),
-			options: { alt: args[1] }
+			options: { alt: args[1] },
+			encrypted: true
 		});
 	}
 };

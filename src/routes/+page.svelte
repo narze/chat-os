@@ -1,22 +1,33 @@
 <script lang="ts" context="module">
+	type EncryptedMeta = string;
+
 	export interface Log {
 		id: string;
 		message: string;
 		self: boolean;
 		time: Timestamp;
 		type: string;
-		alt?: string;
-		meta?: Record<string, any>;
+		meta?: Record<string, any> | EncryptedMeta;
 		guestSession?: boolean;
+		encrypted?: boolean;
 	}
 </script>
 
 <script lang="ts">
+	import {
+		secretbox,
+		randomBytes,
+		decodeUTF8,
+		encodeBase64,
+		decodeBase64,
+		encryptMessage
+	} from '$lib/encryption';
+
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
 	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
-	import type { Components, Message } from '$lib/commands';
+	import type { BotMessageCallback, Components } from '$lib/commands';
 	import { firestore } from '$lib/firebase';
 	import { collectionStore } from '$lib/firebase-store';
 	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
@@ -58,7 +69,6 @@
 			message: log.message,
 			time: Timestamp.fromDate(log.time),
 			type: log.type,
-			alt: log.alt,
 			meta: log.meta,
 			guestSession: log.guestSession
 		})) satisfies Log[];
@@ -171,12 +181,26 @@
 
 		// Add to Firestore or IndexedDB
 		if ($user) {
-			await messagesCollection.add({
-				self: true,
-				message,
-				time: Timestamp.now(),
-				type: 'text'
-			});
+			const encryptionKey = localStorage.getItem('chat-os-encryption-key');
+
+			if (encryptionKey) {
+				const encryptedMessage = encryptMessage(message, encryptionKey);
+
+				await messagesCollection.add({
+					self: true,
+					message: encryptedMessage,
+					time: Timestamp.now(),
+					type: 'text',
+					encrypted: true
+				});
+			} else {
+				await messagesCollection.add({
+					self: true,
+					message,
+					time: Timestamp.now(),
+					type: 'text'
+				});
+			}
 		} else {
 			await db.chatLogs.add({
 				guestSession: true,
@@ -188,32 +212,48 @@
 		}
 	}
 
-	function onBotReply(msg: string, type: string = 'text', options: Record<string, any> = {}) {
+	const onBotReply: BotMessageCallback = (message, payload) => {
+		const type = payload?.type || 'text';
+		const options = payload?.options || {};
+		const encrypted = payload?.encrypted || false;
+
 		setTimeout(async () => {
 			if ($user) {
-				const data = {
-					self: false,
-					message: msg,
-					time: Timestamp.now(),
-					type: type,
-					alt: options.alt || null,
-					meta: options
-				};
+				const encryptionKey = localStorage.getItem('chat-os-encryption-key');
 
-				await messagesCollection.add(data);
+				if (encrypted && encryptionKey) {
+					const encryptedMessage = encryptMessage(message, encryptionKey);
+					const encryptedOptions = encryptMessage(options, encryptionKey);
+
+					await messagesCollection.add({
+						self: false,
+						message: encryptedMessage,
+						time: Timestamp.now(),
+						type,
+						meta: encryptedOptions as unknown as Record<string, any>,
+						encrypted: true
+					});
+				} else {
+					await messagesCollection.add({
+						self: false,
+						message,
+						time: Timestamp.now(),
+						meta: options,
+						type
+					});
+				}
 			} else {
 				await db.chatLogs.add({
 					guestSession: true,
 					isBot: true,
-					message: msg,
+					message,
 					time: new Date(),
 					type: type,
-					alt: options.alt,
 					meta: options
 				});
 			}
 		}, 100);
-	}
+	};
 
 	function onBotCommand(command: string) {
 		if (command == 'clear') {

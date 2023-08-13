@@ -18,7 +18,11 @@ const command: Command = {
 
 		reply('(wip) Here are the chat logs:');
 
-		reply(lines.join('\n'));
+		reply({
+			message: lines.join('\n'),
+			type: 'text',
+			encrypted: true
+		});
 	}
 };
 
