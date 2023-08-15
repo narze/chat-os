@@ -13,7 +13,7 @@ function otherCommandsHandler(e: ChatMessageEvent) {
 	const message = e.data.message;
 	if (message.match(/^commands$/i)) {
 		e.data.botMessageCallback(
-			`Here are the commands I can do: ping, commands, qr, pp, largetype, timer, about, clear`
+			`Here are the commands I can do: ping, commands, qr, pp, largetype, timer, random, uuid, about, clear`
 		);
 		e.stopImmediatePropagation();
 	}
