@@ -9,10 +9,16 @@
 
 	import { fly } from 'svelte/transition';
 	import { decryptMessage } from '$lib/encryption';
+	import { firestore } from '$lib/firebase';
+	import { deleteDoc, doc } from 'firebase/firestore';
+	import { userStore } from '$lib/firebase-store';
+	import { db } from '../../db';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
 	export let guest: boolean = false;
+
+	const user = userStore();
 
 	const isComponent = message.type == 'component';
 	let fullscreenDialog: HTMLDialogElement;
@@ -81,6 +87,28 @@
 				console.error('Error copying text: ', err);
 			});
 
+		closeMenu();
+	}
+
+	async function deleteMessage() {
+		closeMenu();
+
+		if (!confirm('Are you sure you want to delete this message?')) {
+			return;
+		}
+
+		if ($user) {
+			try {
+				await deleteDoc(doc(firestore, `users/${$user!.uid}/messages/${message.id}`));
+			} catch (e) {
+				console.error(e);
+			}
+		} else {
+			await db.chatLogs.delete(+message.id);
+		}
+	}
+
+	function closeMenu() {
 		menu.attributes.removeNamedItem('open');
 	}
 </script>
@@ -158,7 +186,7 @@
 			{/if}
 
 			<details
-				class="dropdown dropdown-bottom not-prose"
+				class="dropdown dropdown-bottom not-prose message-option"
 				class:dropdown-end={message.self}
 				bind:this={menu}
 			>
@@ -184,7 +212,7 @@
 					class="dropdown-content z-[1] menu m-1 shadow bg-base-100 rounded-box text-sm"
 				>
 					<li><button on:click={copyText}>Copy</button></li>
-					<!-- <li><a>Delete</a></li> -->
+					<li><button on:click={deleteMessage}>Delete</button></li>
 				</ul>
 			</details>
 		</div>
