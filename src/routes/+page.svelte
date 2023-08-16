@@ -14,15 +14,8 @@
 </script>
 
 <script lang="ts">
-	import {
-		secretbox,
-		randomBytes,
-		decodeUTF8,
-		encodeBase64,
-		decodeBase64,
-		encryptMessage
-	} from '$lib/encryption';
-
+	import { encryptMessage } from '$lib/encryption';
+	import { toasts } from '$lib/toasts';
 	import { handleMessage } from '$lib/commands';
 	import unknownCommand from '$lib/commands/unknown';
 	import { onDestroy, tick } from 'svelte';
@@ -34,6 +27,7 @@
 	import type { PageData } from './$types';
 	import { liveQuery, type Observable } from 'dexie';
 	import { db } from '$lib/db';
+	import { fade } from 'svelte/transition';
 
 	export let data: PageData;
 	let { user } = data;
@@ -329,6 +323,14 @@
 					/></svg
 				>
 			</button>
+		</div>
+
+		<div class="toast toast-center mb-16">
+			{#each $toasts as toast}
+				<div out:fade class={`alert alert-${toast.type}`}>
+					<span>{toast.message}</span>
+				</div>
+			{/each}
 		</div>
 	</div>
 </main>

@@ -47,4 +47,7 @@ test('Delete user message', async ({ page }) => {
 
 	// Expect "delete me" to be deleted
 	await expect(page.locator(":text('delete me')")).not.toBeVisible();
+
+	// Expect toast message
+	await expect(page.locator(":text('Deleted')")).toBeVisible();
 });

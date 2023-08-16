@@ -13,6 +13,7 @@
 	import { deleteDoc, doc } from 'firebase/firestore';
 	import { userStore } from '$lib/firebase-store';
 	import { db } from '../../db';
+	import { addToast } from '../../toasts';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
@@ -81,7 +82,7 @@
 		navigator.clipboard
 			.writeText(text)
 			.then(() => {
-				// TODO: Add toast or reply
+				addToast('Copied to clipboard', 'info');
 			})
 			.catch((err) => {
 				console.error('Error copying text: ', err);
@@ -106,6 +107,8 @@
 		} else {
 			await db.chatLogs.delete(+message.id);
 		}
+
+		addToast('Deleted', 'warning');
 	}
 
 	function closeMenu() {
