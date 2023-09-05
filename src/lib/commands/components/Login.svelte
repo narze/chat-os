@@ -3,11 +3,11 @@
 	import { sha256 } from '@noble/hashes/sha256';
 	import { decryptMessage, encodeBase64, encryptMessage } from '$lib/encryption';
 	import { auth, firestore } from '$lib/firebase';
-	import { collectionStore, userStore } from '$lib/firebase-store';
 	import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 	import { db } from '$lib/db';
 	import type { Log } from '~/src/routes/+page.svelte';
-	import { Timestamp, collection, doc, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
+	import { Timestamp, collection, doc, getDocs, writeBatch } from 'firebase/firestore';
+	import { userStore } from '$lib/stores/firebase-store';
 
 	const provider = new GoogleAuthProvider();
 	const user = userStore();

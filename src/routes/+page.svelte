@@ -21,13 +21,12 @@
 	import { onDestroy, tick } from 'svelte';
 	import ChatMessage from '$lib/commands/components/ChatMessage.svelte';
 	import type { BotMessageCallback, Components } from '$lib/commands';
-	import { firestore } from '$lib/firebase';
-	import { collectionStore } from '$lib/firebase-store';
-	import { Timestamp, collection, orderBy, query, type DocumentData } from 'firebase/firestore';
+	import { Timestamp } from 'firebase/firestore';
 	import type { PageData } from './$types';
 	import { liveQuery, type Observable } from 'dexie';
 	import { db } from '$lib/db';
 	import { fade } from 'svelte/transition';
+	import { addMessage, firebaseChatMessages, loadMessages } from '$lib/stores/messages';
 
 	export let data: PageData;
 	let { user } = data;
@@ -70,26 +69,22 @@
 		return messages;
 	}) satisfies Observable<Log[]>;
 
-	let messagesQuery: ReturnType<typeof query<DocumentData, DocumentData>>;
-	let messages: ReturnType<typeof collectionStore<Log>>;
-	let messagesCollection: ReturnType<typeof collectionStore<Log>>;
-
 	$: if ($user) {
-		messagesQuery = query(collection(firestore, `users/${$user.uid}/messages`), orderBy('time'));
-		messages = collectionStore<Log>(firestore, messagesQuery);
-		messagesCollection = collectionStore<Log>(firestore, `users/${$user.uid}/messages`);
+		loadMessages($user);
 	}
 
 	$: combinedMessages = $user
-		? [...($messages || []), ...$guestMessages].sort(
+		? [...($firebaseChatMessages || []), ...$guestMessages].sort(
 				(a, b) => a.time?.toDate().valueOf() - b.time?.toDate().valueOf()
 		  )
 		: $guestMessages;
 
 	$: dbReady =
-		$user !== undefined && ($user ? $messages !== undefined : $guestMessages !== undefined);
+		$user !== undefined &&
+		($user ? $firebaseChatMessages !== undefined : $guestMessages !== undefined);
 
-	$: newLoggedInUser = $user && $messages !== undefined && $messages?.length === 0;
+	$: newLoggedInUser =
+		$user && $firebaseChatMessages !== undefined && $firebaseChatMessages?.length === 0;
 	$: newGuestUser = $user == null && $guestMessages !== undefined && $guestMessages?.length === 0;
 
 	let greeted = false;
@@ -107,7 +102,7 @@
 		greeted = true;
 
 		if ($user) {
-			messagesCollection.add({
+			addMessage($user, {
 				self: false,
 				message: `Hello ${$user.displayName}!`,
 				time: Timestamp.now(),
@@ -143,10 +138,10 @@
 
 	const debouncedScrollToBottom = debounce(scrollToBottom, 100);
 
-	$: if (chatDiv && ($messages?.length || $guestMessages?.length)) {
+	$: if (chatDiv && ($firebaseChatMessages?.length || $guestMessages?.length)) {
 		tick().then(() => {
 			if (
-				$messages?.[$messages.length - 1]?.self ||
+				$firebaseChatMessages?.[$firebaseChatMessages.length - 1]?.self ||
 				$guestMessages?.[$guestMessages.length - 1]?.self
 			) {
 				scrollToBottom(chatDiv, 'auto');
@@ -180,7 +175,7 @@
 			if (encryptionKey) {
 				const encryptedMessage = encryptMessage(message, encryptionKey);
 
-				await messagesCollection.add({
+				await addMessage($user, {
 					self: true,
 					message: encryptedMessage,
 					time: Timestamp.now(),
@@ -188,7 +183,7 @@
 					encrypted: true
 				});
 			} else {
-				await messagesCollection.add({
+				await addMessage($user, {
 					self: true,
 					message,
 					time: Timestamp.now(),
@@ -219,7 +214,7 @@
 					const encryptedMessage = encryptMessage(message, encryptionKey);
 					const encryptedOptions = encryptMessage(options, encryptionKey);
 
-					await messagesCollection.add({
+					await addMessage($user, {
 						self: false,
 						message: encryptedMessage,
 						time: Timestamp.now(),
@@ -228,7 +223,7 @@
 						encrypted: true
 					});
 				} else {
-					await messagesCollection.add({
+					await addMessage($user, {
 						self: false,
 						message,
 						time: Timestamp.now(),

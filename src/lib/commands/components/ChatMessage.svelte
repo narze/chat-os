@@ -9,11 +9,10 @@
 
 	import { fly } from 'svelte/transition';
 	import { decryptMessage } from '$lib/encryption';
-	import { firestore } from '$lib/firebase';
-	import { deleteDoc, doc } from 'firebase/firestore';
-	import { userStore } from '$lib/firebase-store';
-	import { db } from '../../db';
-	import { addToast } from '../../toasts';
+	import { db } from '$lib/db';
+	import { addToast } from '$lib/toasts';
+	import { userStore } from '$lib/stores/firebase-store';
+	import { deleteMessage } from '$lib/stores/messages';
 
 	export let message: Message;
 	export let components: Record<string, typeof SvelteComponent<any>>;
@@ -91,7 +90,7 @@
 		closeMenu();
 	}
 
-	async function deleteMessage() {
+	async function deleteChatMessage() {
 		closeMenu();
 
 		if (!confirm('Are you sure you want to delete this message?')) {
@@ -100,7 +99,7 @@
 
 		if ($user) {
 			try {
-				await deleteDoc(doc(firestore, `users/${$user!.uid}/messages/${message.id}`));
+				await deleteMessage($user, message.id);
 			} catch (e) {
 				console.error(e);
 			}
@@ -215,7 +214,7 @@
 					class="dropdown-content z-[1] menu m-1 shadow bg-base-100 rounded-box text-sm"
 				>
 					<li><button on:click={copyText}>Copy</button></li>
-					<li><button on:click={deleteMessage}>Delete</button></li>
+					<li><button on:click={deleteChatMessage}>Delete</button></li>
 				</ul>
 			</details>
 		</div>

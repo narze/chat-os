@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { firestore } from '$lib/firebase';
-	import { collectionStore } from '$lib/firebase-store';
-	import { addDoc, collection } from 'firebase/firestore';
+	import { collectionStore } from '$lib/stores/firebase-store';
 
 	interface Post {
 		message: string;

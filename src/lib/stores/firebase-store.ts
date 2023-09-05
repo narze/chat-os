@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { writable } from 'svelte/store';
 
-import { auth } from './firebase';
+import { auth } from '../firebase';
 
 /**
  * The userStore is updated whenever the authentication state changes.

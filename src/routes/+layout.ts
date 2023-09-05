@@ -1,4 +1,4 @@
-import { userStore } from '../lib/firebase-store';
+import { userStore } from '../lib/stores/firebase-store';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async (event) => {
